@@ -107,31 +107,81 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .account-bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:8px 0 18px;padding:10px 12px;border:1px solid var(--line);background:var(--surf);border-radius:10px;font-size:.88rem}
 .account-bar span{overflow-wrap:anywhere}
 .account-bar .right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.auth-shell{max-width:520px;margin:7vh auto;padding:20px}
+.auth-shell .auth-card{background:#fff;color:#142033;border:1px solid #e5ebef;border-radius:22px;padding:44px 46px;box-shadow:0 18px 45px rgba(20,32,43,.10)}
+.auth-shell .brand{margin:0 0 34px;text-align:center;color:#0e7c86;font-size:2rem;font-weight:800;letter-spacing:-.03em}
+.auth-shell h2{font-size:1.65rem;line-height:1.2;letter-spacing:-.02em;text-align:center;margin:0 0 10px;color:#142033}
+.auth-shell .intro{color:#5d6b78;text-align:center;line-height:1.55;margin:0 0 28px}
+#account-form,#code-form{display:block;margin:0}
+.auth-shell label{display:block;color:#142033;font-weight:600;margin:19px 0 8px}
+.auth-shell input{display:block;width:100%;min-width:0;height:52px;padding:12px 14px;border:1px solid #cdd8df;border-radius:10px;background:#fff;color:#142033;font:inherit}
+.auth-shell input:focus{outline:3px solid #b4e2e4;outline-offset:1px;border-color:#0e7c86}
+.auth-shell .help{display:block;text-align:right;color:#697b88;font-size:.8rem;margin-top:6px}
+.auth-shell .primary{display:block;width:100%;border:0;background:#0e7c86;color:#fff;min-height:52px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;margin-top:24px}
+.auth-shell .primary:hover{background:#096c74}
+.auth-shell .primary:disabled,.auth-shell .link:disabled{opacity:.55;cursor:wait}
+.auth-shell .switch{text-align:center;font-size:.93rem;color:#5d6b78;margin:24px 0 0}
+.auth-shell .link{display:inline;padding:0;border:0;background:none;color:#0e7c86;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.auth-shell .message{min-height:1.4em;margin:18px 0 0;color:#506575;text-align:center;font-size:.9rem;white-space:pre-line}
+.auth-shell .message.error{color:#b3261e}
+.auth-shell .test-pill{display:block;width:max-content;max-width:100%;margin:0 auto 24px;padding:7px 14px;border:1px solid #9bd3d6;border-radius:999px;background:#e5f6f6;color:#0c6c74;font-size:.84rem;font-weight:700;text-align:center}
+.auth-shell .price{text-align:center;margin:0 0 16px;font-size:1.2rem;font-weight:700;color:#142033}
+.hd{position:relative;padding-right:145px}
+.hd #wp{position:absolute;right:14px;top:12px}
+@media(max-width:480px){.auth-shell{margin:3vh auto;padding:14px}.auth-shell .auth-card{padding:32px 24px}.auth-shell h2{font-size:1.4rem}.hd{padding-right:115px}.hd #wp{font-size:.82rem;padding:8px}}
+
 </style>
 </head>
 <body>
-<section id="account-screen" aria-labelledby="account-title">
-  <div class="account-card">
-    <h1 id="account-title">Mon Book</h1>
-    <p>Votre carnet et vos programmes, dans votre espace personnel.</p>
+<section id="account-screen" class="auth-shell" aria-labelledby="auth-heading">
+  <div class="auth-card">
+    <div class="brand">Mon Book</div>
+    <h2 id="auth-heading">Ravi de vous retrouver</h2>
+    <p class="intro" id="auth-description">Connectez-vous à votre espace personnel.</p>
     <form id="account-form">
       <label for="account-email">Adresse e-mail</label>
       <input id="account-email" type="email" autocomplete="email" required placeholder="vous@exemple.com">
       <label for="account-password">Mot de passe</label>
-      <input id="account-password" type="password" autocomplete="current-password" minlength="8" required placeholder="8 caractères minimum">
-      <div class="account-actions">
-        <button type="submit" id="login-button">Se connecter</button>
-        <button type="button" id="signup-button">Créer mon compte</button>
-      </div>
+      <input id="account-password" type="password" autocomplete="current-password" minlength="8" required placeholder="Votre mot de passe">
+      <small id="password-help" class="help" hidden>8 caractères minimum</small>
+      <button type="submit" class="primary" id="auth-submit">Se connecter</button>
     </form>
-    <p id="account-message" role="status" aria-live="polite">Chargement…</p>
+    <p class="switch"><span id="auth-switch-label">Pas encore de compte ? </span><button type="button" class="link" id="auth-switch">Créer mon compte</button></p>
+    <p class="message" id="account-message" role="status" aria-live="polite">Chargement…</p>
+  </div>
+</section>
+<section id="gate-screen" class="auth-shell" hidden>
+  <div class="auth-card">
+    <div class="brand">Mon Book</div>
+    <div id="gate-payment">
+      <h2>Activer mon espace</h2>
+      <p class="price">Tarif de test : 500 FCFA</p>
+      <span class="test-pill">Simulation — aucun paiement réel</span>
+      <p class="intro">Pour cet essai, le paiement est simulé. Un code sera envoyé à votre adresse e-mail.</p>
+      <button type="button" class="primary" id="send-code">Simuler le paiement</button>
+      <p class="switch"><button type="button" class="link" id="open-code">J’ai déjà reçu un code</button></p>
+    </div>
+    <div id="gate-code" hidden>
+      <h2>Activez votre compte</h2>
+      <p class="intro">Saisissez le code reçu par e-mail pour accéder à votre espace.</p>
+      <form id="code-form">
+        <label for="activation-code">Code d’activation</label>
+        <input id="activation-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" required placeholder="Entrez votre code à 8 chiffres">
+        <button type="submit" class="primary" id="verify-code">Activer mon compte</button>
+      </form>
+      <p class="switch">Le code est personnel et utilisable une seule fois.</p>
+      <p class="switch"><button type="button" class="link" id="resend-code">Renvoyer le code</button></p>
+    </div>
+    <p id="gate-message" class="message" role="status" aria-live="polite"></p>
+    <p class="switch"><button type="button" class="link" id="gate-logout">Se déconnecter</button></p>
   </div>
 </section>
 <main id="book-app" hidden>
 <div class="account-bar"><span id="account-email-label"></span><div class="right"><span id="sync-status" role="status" aria-live="polite"></span><button type="button" id="retry-save" hidden>Réessayer</button><button type="button" id="logout-button">Déconnexion</button></div></div>
 <div id="err" hidden></div>
-<div class="hd"><h1>Mon Book</h1><p class="sub" id="who"></p><button id="wp" class="wpb">🎨 Fond d’écran</button></div>
-<section id="wpp" class="d" hidden><h2>Fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps"></p></section>
+<div class="hd"><h1>Mon Book</h1><p class="sub" id="who"></p><button id="wp" class="wpb" aria-label="Personnaliser le fond d’écran">⚙️ Paramètres</button></div>
+<section id="wpp" class="d" hidden><h2>Personnaliser le fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps"></p></section>
 <div class="tabs" role="tablist">
 <button role="tab" id="t1" aria-selected="true">Ma semaine</button>
 <button role="tab" id="t2" aria-selected="false">Mes objectifs</button>
@@ -227,8 +277,19 @@ var fresh=0,curC="",rng=null,ed=document.getElementById("ed");
 function clean(h){var t=document.createElement("template");t.innerHTML=h;t.content.querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,textarea,select").forEach(function(x){x.remove()});t.content.querySelectorAll("*").forEach(function(x){[].slice.call(x.attributes).forEach(function(a){if(/^on/i.test(a.name)||/^(href|src)$/i.test(a.name))x.removeAttribute(a.name)})});var d=document.createElement("div");d.appendChild(t.content);return d.innerHTML}
 function ex(c,v){ed.focus();if(rng){var s=getSelection();s.removeAllRanges();s.addRange(rng)}document.execCommand("styleWithCSS",false,true);document.execCommand(c,false,v||null)}
 function renderTools(){document.getElementById("who").textContent=(S.cfg.name||"Bienvenue")+(S.cfg.field?" · "+S.cfg.field:"");
-  document.getElementById("tl").innerHTML=S.notes.length?S.notes.map(function(n,i){return '<section class="nt d'+(n.id&&n.id===fresh?' new':'')+'"'+(n.c?' style="background:'+n.c+';color:#14202b;border-color:transparent"':'')+'><h2>'+esc(n.ti)+'</h2><div style="margin:0 0 8px;overflow-wrap:anywhere'+(n.h?'':';white-space:pre-wrap')+'">'+(n.h?clean(n.h):esc(n.tx||""))+'</div><p class="empty">'+n.d+(n.e?' · modifiée le '+n.e:'')+'</p><div class="row"><button data-ne="'+i+'" aria-label="Modifier" title="Modifier">✏️</button><button data-nr="'+i+'" aria-label="Réutiliser" title="Réutiliser comme modèle">📋</button><button data-nd="'+i+'" aria-label="Supprimer" title="Supprimer">🗑️</button></div></section>'}).join(''):'<p class="empty">Aucune note pour l’instant.</p>';
+  document.getElementById("tl").innerHTML=S.notes.length?S.notes.map(function(n,i){return '<section class="nt d'+(n.id&&n.id===fresh?' new':'')+'"'+(n.c?' style="background:'+n.c+';color:#14202b;border-color:transparent"':'')+'><h2>'+esc(n.ti)+'</h2><div style="margin:0 0 8px;overflow-wrap:anywhere'+(n.h?'':';white-space:pre-wrap')+'">'+(n.h?clean(n.h):esc(n.tx||""))+'</div><p class="empty">'+n.d+(n.e?' · modifiée le '+n.e:'')+'</p><div class="row"><button data-ne="'+i+'" aria-label="Modifier" title="Modifier">✏️</button><button data-nr="'+i+'" aria-label="Réutiliser" title="Réutiliser comme modèle">📋</button><button data-nd="'+i+'" aria-label="Supprimer" title="Supprimer">🗑️</button><button data-pdf="'+i+'" title="Exporter cette note">Télécharger en PDF</button></div></section>'}).join(''):'<p class="empty">Aucune note pour l’instant.</p>';
 }
+document.addEventListener("click",function(e){
+  var btn=e.target.closest("button[data-pdf]");if(!btn)return;
+  var n=S.notes[Number(btn.dataset.pdf)];if(!n)return;
+  var w=window.open("","_blank");
+  if(!w){alert("Autorisez les fenêtres contextuelles pour enregistrer votre note en PDF.");return}
+  var title=esc(String(n.ti||"Note"));
+  var content=n.h?clean(n.h):esc(String(n.tx||""));
+  w.document.open();
+  w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>'+title+'</title><style>body{font:16px/1.6 Arial,sans-serif;color:#142033;margin:2.5cm}h1{font-size:26px}main{overflow-wrap:anywhere;white-space:pre-wrap}img{max-width:100%}@page{margin:1.5cm}</style></head><body><h1>'+title+'</h1><main>'+content+'</main></body></html>');
+  w.document.close();w.focus();setTimeout(function(){w.print()},300);
+});
 document.addEventListener("selectionchange",function(){var s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))rng=s.getRangeAt(0).cloneRange()});
 document.querySelector(".tb").addEventListener("mousedown",function(e){var n=e.target.tagName;if(n!=="INPUT"&&n!=="SELECT"&&n!=="OPTION")e.preventDefault()});
 document.querySelector(".tb").addEventListener("click",function(e){var b=e.target.closest("button");if(b&&b.dataset.cmd)ex(b.dataset.cmd)});
@@ -276,6 +337,6 @@ document.getElementById("wb2").onclick=function(){wk=0;render()};
 render();
 }
 </script>
-<script src="app-compte.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5ae1f0aba24b7b7',t:'MTc5NDc0NDI5Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5ae1f0aba24b7b7',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script src="app-v2.js"></script>
+</body>
 </html>
