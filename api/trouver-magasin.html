@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retrouver mon magasin — Mon Book</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f1f5f7;
+  color: #142033;
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main {
+  max-width: 600px;
+  margin: 8vh auto;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #dce6eb;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 12px 32px #12233412;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 1.8rem;
+  line-height: 1.2;
+}
+
+p {
+  color: #536674;
+}
+
+button {
+  background: #0e7c86;
+  color: #fff;
+  border: 0;
+  border-radius: 9px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.store {
+  border: 1px solid #dce6eb;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 16px;
+}
+
+.store strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.store input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd7de;
+  border-radius: 7px;
+  font: inherit;
+  color: #142033;
+}
+
+#message {
+  white-space: pre-line;
+}
+
+.error {
+  color: #b3261e;
+}
+
+a {
+  color: #0e7c86;
+}
+</style>
+</head>
+
+<body>
+<main>
+  <div class="card">
+    <h1>Retrouver mon magasin Jèko</h1>
+
+    <p>
+      Outil temporaire réservé à votre compte de test
+      Mon Book. Cette opération ne crée aucun paiement.
+    </p>
+
+    <p>
+      Connectez-vous d’abord à Mon Book dans ce navigateur,
+      puis cliquez ci-dessous.
+    </p>
+
+    <button type="button" id="find">
+      Afficher mes magasins
+    </button>
+
+    <p id="message" role="status" aria-live="polite"></p>
+
+    <div id="stores"></div>
+
+    <p>
+      <a href="/">Retour à Mon Book</a>
+    </p>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+
+<script>
+(function () {
+  var button = document.getElementById('find');
+  var message = document.getElementById('message');
+  var list = document.getElementById('stores');
+
+  function show(text, error) {
+    message.textContent = text;
+    message.classList.toggle('error', !!error);
+  }
+
+  button.addEventListener('click', async function () {
+    button.disabled = true;
+    list.replaceChildren();
+    show('Recherche en cours…', false);
+
+    try {
+      if (
+        !window.supabase ||
+        !window.MON_BOOK_CONFIG
+      ) {
+        throw new Error(
+          'La connexion ne peut pas être chargée. Vérifiez Internet puis actualisez.'
+        );
+      }
+
+      var config = window.MON_BOOK_CONFIG;
+
+      var client = window.supabase.createClient(
+        config.supabaseUrl,
+        config.supabaseKey
+      );
+
+      var result = await client.auth.getSession();
+
+      var session =
+        result.data && result.data.session;
+
+      if (!session || !session.access_token) {
+        throw new Error(
+          'Connectez-vous d’abord à Mon Book dans ce navigateur, puis revenez sur cette page.'
+        );
+      }
+
+      var response = await fetch('/api/magasins', {
+        headers: {
+          Authorization:
+            'Bearer ' + session.access_token
+        }
+      });
+
+      var data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Recherche impossible.'
+        );
+      }
+
+      if (
+        !Array.isArray(data.magasins) ||
+        data.magasins.length === 0
+      ) {
+        show(
+          'Aucun magasin trouvé avec cette clé Jèko.',
+          true
+        );
+
+        return;
+      }
+
+      data.magasins.forEach(function (store) {
+        var card = document.createElement('div');
+        card.className = 'store';
+
+        var name = document.createElement('strong');
+        name.textContent = store.name;
+
+        var label = document.createElement('label');
+        label.textContent = 'Identifiant du magasin';
+
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.readOnly = true;
+        input.value = store.id;
+
+        input.setAttribute(
+          'aria-label',
+          'Identifiant du magasin ' + store.name
+        );
+
+        input.addEventListener('click', function () {
+          input.select();
+        });
+
+        card.appendChild(name);
+        card.appendChild(label);
+        card.appendChild(input);
+
+        list.appendChild(card);
+      });
+
+      show(
+        'Choisissez le magasin utilisé par Goalxs et copiez son identifiant.',
+        false
+      );
+    } catch (error) {
+      show(
+        error.message || 'Recherche impossible. Réessayez.',
+        true
+      );
+    } finally {
+      button.disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
