@@ -1,4 +1,4 @@
 window.MON_BOOK_CONFIG = {
-  supabaseUrl: 'VOTRE_URL_SUPABASE',
-  supabaseKey: 'VOTRE_CLE_PUBLIABLE_SUPABASE'
+  supabaseUrl: 'https://swgifqnatsxekmimrges.supabase.co',
+  supabaseKey: 'sb_publishable_uyLf-VUBkm18v35ArYs4nQ_78F8PSr-'
 };
