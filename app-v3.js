@@ -263,3 +263,106 @@
   }
   init();
 })();
+
+
+(function () {
+  'use strict';
+
+  var head = document.head;
+
+  function setMeta(name, content) {
+    var item = head.querySelector('meta[name="' + name + '"]');
+    if (!item) {
+      item = document.createElement('meta');
+      item.name = name;
+      head.appendChild(item);
+    }
+    item.content = content;
+  }
+
+  if (!head.querySelector('link[rel="manifest"]')) {
+    var manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = '/manifest.webmanifest';
+    head.appendChild(manifestLink);
+  }
+
+  if (!head.querySelector('link[rel="apple-touch-icon"]')) {
+    var appleIcon = document.createElement('link');
+    appleIcon.rel = 'apple-touch-icon';
+    appleIcon.href = '/icon-192.png';
+    head.appendChild(appleIcon);
+  }
+
+  setMeta('theme-color', '#0e7c86');
+  setMeta('apple-mobile-web-app-capable', 'yes');
+  setMeta('apple-mobile-web-app-status-bar-style', 'default');
+  setMeta('apple-mobile-web-app-title', 'Mon Book');
+
+  var standalone =
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    navigator.standalone === true;
+  var ios =
+    /iphone|ipad|ipod/i.test(navigator.userAgent || '') ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var deferredPrompt = null;
+  var button = document.createElement('button');
+
+  button.type = 'button';
+  button.textContent = 'Installer Mon Book';
+  button.setAttribute('aria-label', 'Installer Mon Book sur cet appareil');
+  button.hidden = standalone;
+  button.style.position = 'fixed';
+  button.style.right = '16px';
+  button.style.bottom = 'calc(16px + env(safe-area-inset-bottom, 0px))';
+  button.style.zIndex = '99999';
+  button.style.padding = '11px 16px';
+  button.style.border = '0';
+  button.style.borderRadius = '999px';
+  button.style.background = '#0e7c86';
+  button.style.color = '#fff';
+  button.style.font = '600 14px system-ui, sans-serif';
+  button.style.boxShadow = '0 4px 16px rgba(20,32,43,.22)';
+  button.style.cursor = 'pointer';
+  document.body.appendChild(button);
+
+  window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    deferredPrompt = event;
+    if (!standalone) button.hidden = false;
+  });
+
+  window.addEventListener('appinstalled', function () {
+    button.hidden = true;
+    deferredPrompt = null;
+  });
+
+  button.addEventListener('click', async function () {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      var choice = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      if (choice.outcome === 'accepted') button.hidden = true;
+      return;
+    }
+
+    if (ios) {
+      window.alert('Pour installer Mon Book : touchez Partager, puis « Sur l’écran d’accueil » ou « Ajouter à l’écran d’accueil ».');
+      return;
+    }
+
+    window.alert('Ouvrez le menu de votre navigateur puis choisissez « Installer l’application » ou « Ajouter à l’écran d’accueil ».');
+  });
+
+  if (!standalone && !ios) {
+    window.setTimeout(function () {
+      if (!standalone) button.hidden = false;
+    }, 2500);
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/service-worker.js').catch(function () {});
+    });
+  }
+})();
