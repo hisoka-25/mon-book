@@ -218,7 +218,7 @@ module.exports = async function (req, res) {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            from: 'Mon Book <onboarding@resend.dev>',
+            from: 'Mon Book <codes@monbook.goalxs.com>',
             to: [email],
             subject: 'Votre code d’activation Mon Book',
             text:
