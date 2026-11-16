@@ -6,6 +6,46 @@
   var email = $('account-email'), password = $('account-password');
   var messageNode = $('account-message'), gateMessage = $('gate-message');
   var sync = $('sync-status'), retry = $('retry-save');
+  var DEVICE_STORAGE_KEY = 'mon_book_device_id';
+  var DEVICE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  function createDeviceId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (char) {
+      var random = Math.random() * 16 | 0;
+      var value = char === 'x' ? random : (random & 3 | 8);
+      return value.toString(16);
+    });
+  }
+
+  function getDeviceId() {
+    try {
+      var saved = window.localStorage.getItem(DEVICE_STORAGE_KEY);
+      if (DEVICE_UUID.test(saved || '')) return saved;
+      saved = createDeviceId();
+      window.localStorage.setItem(DEVICE_STORAGE_KEY, saved);
+      return saved;
+    } catch (error) {
+      if (!window.__monBookDeviceId) {
+        window.__monBookDeviceId = createDeviceId();
+      }
+      return window.__monBookDeviceId;
+    }
+  }
+
+  var deviceId = getDeviceId();
+
+  function getDeviceLabel() {
+    var agent = navigator.userAgent || '';
+    if (/iphone|ipad|ipod/i.test(agent)) return 'iPhone ou iPad';
+    if (/android/i.test(agent)) return 'Appareil Android';
+    if (/windows/i.test(agent)) return 'Ordinateur Windows';
+    if (/macintosh|mac os/i.test(agent)) return 'Ordinateur Mac';
+    if (/linux/i.test(agent)) return 'Ordinateur Linux';
+    return 'Navigateur web';
+  }
 
   function message(node, text, isError) {
     node.textContent = text || '';
@@ -98,9 +138,113 @@
       lock(false);
     }
   }
+  function ensureDeviceScreen() {
+    var screen = $('device-limit-screen');
+    if (screen) return screen;
+    screen = document.createElement('section');
+    screen.id = 'device-limit-screen';
+    screen.className = 'auth-shell';
+    screen.hidden = true;
+    screen.innerHTML = '<div class="auth-card"><div class="brand">Mon Book</div><h2>Limite d’appareils atteinte</h2><p class="intro">Votre compte utilise déjà ses deux appareils autorisés. Retirez un ancien appareil pour continuer ici.</p><div id="device-list"></div><p class="message" id="device-message" role="status" aria-live="polite"></p><p class="switch"><button type="button" class="link" id="device-limit-logout">Se déconnecter</button></p></div>';
+    document.body.insertBefore(screen, $('book-app'));
+    var logoutButton = screen.querySelector('#device-limit-logout');
+    logoutButton.addEventListener('click', function () { logout(logoutButton); });
+    return screen;
+  }
+
+  function hideDeviceScreen() {
+    var screen = $('device-limit-screen');
+    if (screen) screen.hidden = true;
+  }
+
+  function showDeviceLimit(devices) {
+    $('account-screen').hidden = true;
+    $('gate-screen').hidden = true;
+    $('book-app').hidden = true;
+    var screen = ensureDeviceScreen();
+    screen.hidden = false;
+    var list = screen.querySelector('#device-list');
+    var statusNode = screen.querySelector('#device-message');
+    list.replaceChildren();
+    statusNode.textContent = '';
+
+    if (!Array.isArray(devices) || !devices.length) {
+      statusNode.textContent = 'Impossible d’afficher vos appareils. Actualisez la page ou réessayez.';
+      return;
+    }
+
+    devices.forEach(function (device) {
+      var row = document.createElement('div');
+      row.style.padding = '12px';
+      row.style.margin = '12px 0';
+      row.style.border = '1px solid #d8e0e6';
+      row.style.borderRadius = '10px';
+
+      var label = document.createElement('strong');
+      label.textContent = device.label || 'Navigateur web';
+      row.appendChild(label);
+
+      var lastSeen = document.createElement('p');
+      lastSeen.style.margin = '4px 0 10px';
+      lastSeen.style.color = '#5d6b78';
+      var date = new Date(device.lastSeenAt || device.createdAt || '');
+      lastSeen.textContent = isNaN(date.getTime())
+        ? 'Appareil enregistré'
+        : 'Dernière activité : ' + date.toLocaleString('fr-FR');
+      row.appendChild(lastSeen);
+
+      var removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.className = 'primary';
+      removeButton.textContent = 'Retirer cet appareil';
+      removeButton.addEventListener('click', async function () {
+        removeButton.disabled = true;
+        statusNode.textContent = 'Mise à jour des appareils…';
+        try {
+          var removed = await deviceRequest('remove', device.deviceId);
+          if (!removed.ok) throw new Error(removed.data.message || 'Suppression impossible.');
+          await enter(currentUser);
+        } catch (error) {
+          removeButton.disabled = false;
+          statusNode.textContent = error.message || 'Suppression impossible. Réessayez.';
+        }
+      });
+      row.appendChild(removeButton);
+      list.appendChild(row);
+    });
+  }
+
   async function enter(user) {
     currentUser = user;
     $('account-screen').hidden = true;
+    $('gate-screen').hidden = true;
+    $('book-app').hidden = true;
+    hideDeviceScreen();
+    message(messageNode, 'Vérification de vos appareils…');
+
+    var registered;
+    try {
+      registered = await deviceRequest('register');
+    } catch (error) {
+      $('account-screen').hidden = false;
+      message(messageNode, error.message || 'Vérification des appareils impossible. Réessayez.', true);
+      lock(false);
+      return;
+    }
+
+    if (registered.status === 409 && registered.data.status === 'limit') {
+      showDeviceLimit(registered.data.devices || []);
+      lock(false);
+      return;
+    }
+
+    if (!registered.ok || !registered.data || registered.data.status !== 'ok') {
+      $('account-screen').hidden = false;
+      message(messageNode, registered.data && registered.data.message || 'Impossible d’enregistrer cet appareil.', true);
+      lock(false);
+      return;
+    }
+
     $('gate-screen').hidden = false;
     $('gate-payment').hidden = true;
     $('gate-code').hidden = true;
@@ -146,6 +290,41 @@
     if (!response.ok) throw new Error(data.message || 'Service indisponible. Réessayez.');
     return data;
   }
+  async function deviceRequest(action, targetDeviceId) {
+    var result = await client.auth.getSession();
+    var session = result.data && result.data.session;
+    if (!session || !session.access_token) {
+      throw new Error('Votre session a expiré. Reconnectez-vous.');
+    }
+
+    var payload = { action: action };
+    if (action === 'register') {
+      payload.deviceId = deviceId;
+      payload.label = getDeviceLabel();
+    } else if (targetDeviceId) {
+      payload.deviceId = targetDeviceId;
+    }
+
+    var response = await fetch('/api/devices', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + session.access_token
+      },
+      body: JSON.stringify(payload)
+    });
+
+    var data;
+    try { data = await response.json(); }
+    catch (error) { throw new Error('Service des appareils indisponible.'); }
+
+    if (!response.ok && response.status !== 409) {
+      throw new Error(data.message || 'Service des appareils indisponible.');
+    }
+
+    return { ok: response.ok, status: response.status, data: data };
+  }
+
   async function checkPayment() {
     if (busy) return;
     lock(true); message(gateMessage, 'Vérification du paiement…');
@@ -255,7 +434,17 @@
       message(messageNode, 'Impossible de charger la connexion. Vérifiez Internet et actualisez.', true); return;
     }
     try {
-      client = window.supabase.createClient(config.supabaseUrl, config.supabaseKey);
+      client = window.supabase.createClient(
+        config.supabaseUrl,
+        config.supabaseKey,
+        {
+          global: {
+            headers: {
+              'x-monbook-device-id': deviceId
+            }
+          }
+        }
+      );
       var response = await client.auth.getUser();
       if (response.data && response.data.user) { await enter(response.data.user); return; }
       setMode('login'); lock(false);
