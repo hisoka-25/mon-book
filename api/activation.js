@@ -1,14 +1,20 @@
 const crypto = require('node:crypto');
 
-const SUPABASE_URL = 'https://swgifqnatsxekmimrges.supabase.co';
-const SUPABASE_PUBLIC_KEY = 'sb_publishable_uyLf-VUBkm18v35ArYs4nQ_78F8PSr-';
+const SUPABASE_URL =
+  'https://swgifqnatsxekmimrges.supabase.co';
+
+const SUPABASE_PUBLIC_KEY =
+  'sb_publishable_uyLf-VUBkm18v35ArYs4nQ_78F8PSr-';
 
 module.exports = async function (req, res) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
 
   function reply(status, message, extra = {}) {
-    return res.status(status).json({ message, ...extra });
+    return res.status(status).json({
+      message,
+      ...extra
+    });
   }
 
   if (req.method !== 'POST') {
@@ -18,6 +24,7 @@ module.exports = async function (req, res) {
 
   const secret = process.env.SUPABASE_SECRET_KEY;
   const resendKey = process.env.RESEND_API_KEY;
+
   const testEmail = (
     process.env.MONBOOK_TEST_EMAIL || ''
   ).trim().toLowerCase();
@@ -25,13 +32,16 @@ module.exports = async function (req, res) {
   if (!secret || !resendKey || !testEmail) {
     return reply(
       503,
-      'Le service de test n’est pas encore configuré.'
+      'Le service n’est pas encore configuré.'
     );
   }
 
-  const authorization = req.headers.authorization || '';
+  const authorization =
+    req.headers.authorization || '';
 
-  if (!/^Bearer [A-Za-z0-9._-]+$/.test(authorization)) {
+  if (
+    !/^Bearer [A-Za-z0-9._-]+$/.test(authorization)
+  ) {
     return reply(
       401,
       'Connectez-vous avant de continuer.'
@@ -48,7 +58,10 @@ module.exports = async function (req, res) {
     return reply(400, 'Demande invalide.');
   }
 
-  if (body.action !== 'send' && body.action !== 'verify') {
+  if (
+    body.action !== 'send' &&
+    body.action !== 'verify'
+  ) {
     return reply(400, 'Action invalide.');
   }
 
@@ -71,18 +84,59 @@ module.exports = async function (req, res) {
     }
 
     const user = await userResponse.json();
-    const email = (user.email || '').trim().toLowerCase();
+
+    const email = (
+      user.email || ''
+    ).trim().toLowerCase();
+
+    const uuid =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
     if (
-      !user.id ||
+      !uuid.test(user.id || '') ||
       !user.email_confirmed_at ||
       email !== testEmail
     ) {
       return reply(
         403,
-        'Cette simulation est réservée au compte de test autorisé.'
+        'L’activation est réservée au compte de test autorisé.'
       );
     }
+
+    const paymentResponse = await fetch(
+      SUPABASE_URL +
+      '/rest/v1/mon_book_payments?user_id=eq.' +
+      user.id +
+      '&status=eq.paid&select=id&limit=2',
+      {
+        headers: {
+          apikey: secret
+        },
+        signal: AbortSignal.timeout(8000)
+      }
+    );
+
+    if (!paymentResponse.ok) {
+      return reply(
+        503,
+        'Impossible de vérifier le paiement. Réessayez.'
+      );
+    }
+
+    const payments = await paymentResponse.json();
+
+    if (
+      !Array.isArray(payments) ||
+      payments.length !== 1 ||
+      !payments[0].id
+    ) {
+      return reply(
+        402,
+        'Aucun paiement confirmé pour ce compte.'
+      );
+    }
+
+    const paymentId = payments[0].id;
 
     async function rpc(name, payload) {
       const response = await fetch(
@@ -107,7 +161,9 @@ module.exports = async function (req, res) {
     function hashCode(code) {
       return crypto
         .createHmac('sha256', secret)
-        .update(user.id + ':' + code)
+        .update(
+          user.id + ':' + paymentId + ':' + code
+        )
         .digest('hex');
     }
 
@@ -171,7 +227,7 @@ module.exports = async function (req, res) {
               code +
               '\n\n' +
               'Ce code est personnel, valable 15 minutes et utilisable une seule fois.\n\n' +
-              'Le paiement est simulé : aucun argent n’a été prélevé.\n\n' +
+              'Votre paiement a été confirmé.\n\n' +
               'Si vous n’êtes pas à l’origine de cette demande, ignorez ce message.'
           })
         }
