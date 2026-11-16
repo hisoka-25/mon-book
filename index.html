@@ -156,10 +156,11 @@ form[data-time] input[type=text]{flex:1 1 55%}
     <div class="brand">Mon Book</div>
     <div id="gate-payment">
       <h2>Activer mon espace</h2>
-      <p class="price">Tarif de test : 500 FCFA</p>
-      <span class="test-pill">Simulation — aucun paiement réel</span>
-      <p class="intro">Pour cet essai, le paiement est simulé. Un code sera envoyé à votre adresse e-mail.</p>
-      <button type="button" class="primary" id="send-code">Simuler le paiement</button>
+      <p class="price">2 100 FCFA · Paiement unique</p>
+      <span class="test-pill">Paiement sécurisé avec Wave</span>
+      <p class="intro">Après confirmation du paiement, un code sera envoyé à votre adresse e-mail. Accès réservé au compte de test pour le moment.</p>
+      <button type="button" class="primary" id="send-code">Payer 2 100 FCFA avec Wave</button>
+      <p class="switch"><button type="button" class="link" id="check-payment">Vérifier mon paiement</button></p>
       <p class="switch"><button type="button" class="link" id="open-code">J’ai déjà reçu un code</button></p>
     </div>
     <div id="gate-code" hidden>
@@ -337,6 +338,6 @@ document.getElementById("wb2").onclick=function(){wk=0;render()};
 render();
 }
 </script>
-<script src="app-v2.js"></script>
+<script src="app-v3.js"></script>
 </body>
 </html>
