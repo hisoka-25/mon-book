@@ -25,11 +25,7 @@ module.exports = async function (req, res) {
   const secret = process.env.SUPABASE_SECRET_KEY;
   const resendKey = process.env.RESEND_API_KEY;
 
-  const testEmail = (
-    process.env.MONBOOK_TEST_EMAIL || ''
-  ).trim().toLowerCase();
-
-  if (!secret || !resendKey || !testEmail) {
+  if (!secret || !resendKey) {
     return reply(
       503,
       'Le service n’est pas encore configuré.'
@@ -95,11 +91,11 @@ module.exports = async function (req, res) {
     if (
       !uuid.test(user.id || '') ||
       !user.email_confirmed_at ||
-      email !== testEmail
+      !email
     ) {
       return reply(
         403,
-        'L’activation est réservée au compte de test autorisé.'
+        'Un compte avec une adresse e-mail confirmée est nécessaire.'
       );
     }
 
