@@ -44,6 +44,9 @@ module.exports = async function (req, res) {
     process.env.MONBOOK_TEST_EMAIL || ''
   ).trim().toLowerCase();
 
+  const publicSales =
+    process.env.MONBOOK_PUBLIC_SALES === 'true';
+
   if (
     !dbKey ||
     !apiKey ||
@@ -51,7 +54,7 @@ module.exports = async function (req, res) {
     !UUID.test(storeId || '') ||
     !webhookSecret ||
     !resendKey ||
-    !testEmail
+    (!testEmail && !publicSales)
   ) {
     return reply(
       503,
@@ -107,11 +110,14 @@ module.exports = async function (req, res) {
     if (
       !UUID.test(user.id || '') ||
       !user.email_confirmed_at ||
-      email !== testEmail
+      !email ||
+      (!publicSales && email !== testEmail)
     ) {
       return reply(
         403,
-        'Le paiement est réservé au compte de test autorisé.'
+        publicSales
+          ? 'Un compte confirmé est nécessaire pour payer.'
+          : 'Le paiement est réservé au compte de test autorisé.'
       );
     }
 
