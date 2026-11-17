@@ -3,7 +3,7 @@ const crypto = require('node:crypto');
 const SUPABASE_URL =
   'https://swgifqnatsxekmimrges.supabase.co';
 
-const EXPECTED_AMOUNT = 210000;
+const SUPPORTED_AMOUNTS = new Set([110000, 210000]);
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -127,9 +127,7 @@ async function handler(req, res) {
       typeof event.id !== 'string' ||
       !event.id ||
       event.id.length > 200 ||
-      !event.amount ||
-      event.amount.currency !== 'XOF' ||
-      event.amount.amount !== EXPECTED_AMOUNT
+      !event.amount
     ) {
       return res.status(400).json({
         message: 'Transaction non conforme.'
@@ -170,6 +168,18 @@ async function handler(req, res) {
     }
 
     const payment = rows[0];
+    const expectedAmount = payment.amount_cents;
+
+    if (
+      !Number.isSafeInteger(expectedAmount) ||
+      !SUPPORTED_AMOUNTS.has(expectedAmount) ||
+      !event.amount ||
+      event.amount.currency !== 'XOF' ||
+      event.amount.amount !== expectedAmount ||
+      payment.currency !== 'XOF'
+    ) {
+      return res.status(400).json({ message: 'Transaction non conforme.' });
+    }
 
     if (payment.status === 'paid') {
       if (payment.provider_transaction_id !== event.id) {
@@ -185,7 +195,7 @@ async function handler(req, res) {
 
     if (
       !['creating', 'pending'].includes(payment.status) ||
-      payment.amount_cents !== EXPECTED_AMOUNT ||
+      !SUPPORTED_AMOUNTS.has(payment.amount_cents) ||
       payment.currency !== 'XOF' ||
       (
         payment.payment_request_id &&
@@ -228,7 +238,7 @@ async function handler(req, res) {
       transaction.id !== event.id ||
       transaction.status !== 'success' ||
       !transaction.amount ||
-      transaction.amount.amount !== EXPECTED_AMOUNT ||
+      transaction.amount.amount !== expectedAmount ||
       transaction.amount.currency !== 'XOF'
     ) {
       return res.status(503).json({
@@ -237,54 +247,22 @@ async function handler(req, res) {
     }
 
     const result = await db(
-      'mon_book_payments?id=eq.' +
-      payment.id +
-      '&status=in.(creating,pending)' +
-      '&select=status,provider_transaction_id',
+      'rpc/mon_book_apply_subscription_payment',
       {
-        method: 'PATCH',
-        headers: {
-          Prefer: 'return=representation'
-        },
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
         body: JSON.stringify({
-          status: 'paid',
-          payment_request_id: details.id,
-          provider_transaction_id: event.id,
-          paid_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          p_payment_id: payment.id,
+          p_transaction_id: event.id
         })
       }
     );
 
-    if (
-      Array.isArray(result) &&
-      result.length === 1
-    ) {
-      return res.status(200).json({
-        received: true
-      });
+    if (result === 'applied' || result === 'already_applied') {
+      return res.status(200).json({ received: true });
     }
 
-    const latest = await db(
-      'mon_book_payments?id=eq.' +
-      payment.id +
-      '&select=status,provider_transaction_id'
-    );
-
-    if (
-      Array.isArray(latest) &&
-      latest.length === 1 &&
-      latest[0].status === 'paid' &&
-      latest[0].provider_transaction_id === event.id
-    ) {
-      return res.status(200).json({
-        received: true
-      });
-    }
-
-    return res.status(503).json({
-      message: 'Enregistrement en attente.'
-    });
+    return res.status(503).json({ message: 'Enregistrement de l’abonnement en attente.' });
   } catch (error) {
     return res.status(503).json({
       message: 'Service temporairement indisponible.'
