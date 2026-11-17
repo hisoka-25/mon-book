@@ -99,11 +99,35 @@ module.exports = async function (req, res) {
       );
     }
 
+    const subscriptionResponse = await fetch(
+      SUPABASE_URL +
+      '/rest/v1/mon_book_subscriptions?user_id=eq.' +
+      user.id +
+      '&select=expires_at&limit=1',
+      {
+        headers: { apikey: secret },
+        signal: AbortSignal.timeout(8000)
+      }
+    );
+
+    if (!subscriptionResponse.ok) {
+      return reply(503, 'Impossible de vérifier votre abonnement. Réessayez.');
+    }
+
+    const subscriptions = await subscriptionResponse.json();
+    const activeUntil = Array.isArray(subscriptions) && subscriptions.length === 1
+      ? Date.parse(subscriptions[0].expires_at || '')
+      : NaN;
+
+    if (!Number.isFinite(activeUntil) || activeUntil <= Date.now()) {
+      return reply(402, 'Votre abonnement est expiré. Payez 1 100 FCFA pour le renouveler.');
+    }
+
     const paymentResponse = await fetch(
       SUPABASE_URL +
       '/rest/v1/mon_book_payments?user_id=eq.' +
       user.id +
-      '&status=eq.paid&select=id&limit=2',
+      '&status=eq.paid&select=id,paid_at&order=paid_at.desc&limit=1',
       {
         headers: {
           apikey: secret
