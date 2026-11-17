@@ -3,6 +3,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var client, currentUser, started = false, busy = false, mode = 'login';
   var pending = null, running = null, timer = null;
+  var subscriptionExpiresAt = null, expiryTimer = null;
   var email = $('account-email'), password = $('account-password');
   var messageNode = $('account-message'), gateMessage = $('gate-message');
   var sync = $('sync-status'), retry = $('retry-save');
@@ -116,6 +117,38 @@
   window.addEventListener('beforeunload', function (event) { if (pending || running) { event.preventDefault(); event.returnValue = ''; } });
   window.addEventListener('online', function () { if (pending) flush(); });
 
+  function formatSubscriptionDate(value) {
+    var date = new Date(value);
+    if (isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('fr-FR', { timeZone: 'Africa/Abidjan', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  function showExpiredSubscription() {
+    if (!started) return;
+    started = false;
+    if (expiryTimer) clearTimeout(expiryTimer);
+    $('book-app').hidden = true;
+    $('gate-screen').hidden = false;
+    $('gate-payment').hidden = false;
+    $('gate-code').hidden = true;
+    var heading = $('gate-payment').querySelector('h2');
+    if (heading) heading.textContent = 'Renouveler mon abonnement';
+    message(gateMessage, 'Votre abonnement a expiré. Vos données restent conservées. Payez 1 100 FCFA pour un nouveau mois.', false);
+    lock(false);
+  }
+
+  function scheduleSubscriptionExpiry() {
+    if (expiryTimer) clearTimeout(expiryTimer);
+    if (!subscriptionExpiresAt) return;
+    var expiryDelay = Date.parse(subscriptionExpiresAt) - Date.now();
+    if (!Number.isFinite(expiryDelay) || expiryDelay <= 0) {
+      showExpiredSubscription();
+      return;
+    }
+    // Les navigateurs limitent généralement setTimeout à environ 24,8 jours.
+    expiryTimer = setTimeout(scheduleSubscriptionExpiry, Math.min(expiryDelay, 2147483647));
+  }
+
   async function openBook() {
     if (started) return;
     var result;
@@ -133,6 +166,7 @@
       $('gate-screen').hidden = true;
       $('book-app').hidden = false;
       status('Espace chargé', false);
+      scheduleSubscriptionExpiry();
     } catch (error) {
       message(gateMessage, 'Impossible d’ouvrir le carnet. Aucune donnée n’a été supprimée.', true);
       lock(false);
@@ -248,17 +282,44 @@
     $('gate-screen').hidden = false;
     $('gate-payment').hidden = true;
     $('gate-code').hidden = true;
-    message(gateMessage, 'Vérification de votre accès…');
-    var result;
-    try { result = await client.from('mon_book_access').select('user_id').eq('user_id', user.id).maybeSingle(); }
-    catch (error) { result = { error: error }; }
-    if (result.error) {
-      message(gateMessage, 'Impossible de vérifier votre accès. Déconnectez-vous et réessayez.', true);
+    message(gateMessage, 'Vérification de votre abonnement…');
+    var accessResult, subscriptionResult;
+    try {
+      var checks = await Promise.all([
+        client.from('mon_book_access').select('user_id').eq('user_id', user.id).maybeSingle(),
+        client.from('mon_book_subscriptions').select('expires_at').eq('user_id', user.id).maybeSingle()
+      ]);
+      accessResult = checks[0];
+      subscriptionResult = checks[1];
+    } catch (error) {
+      accessResult = { error: error };
+      subscriptionResult = { error: error };
+    }
+    if (accessResult.error || subscriptionResult.error) {
+      message(gateMessage, 'Impossible de vérifier votre abonnement. Déconnectez-vous et réessayez.', true);
       lock(false); return;
     }
-    if (result.data) { await openBook(); return; }
+    var subscription = subscriptionResult.data;
+    subscriptionExpiresAt = subscription && subscription.expires_at || null;
+    var subscriptionActive = !!(subscriptionExpiresAt && Date.parse(subscriptionExpiresAt) > Date.now());
+    if (subscriptionActive && accessResult.data) { await openBook(); return; }
+    if (subscriptionActive && !accessResult.data) {
+      $('gate-payment').hidden = true;
+      $('gate-code').hidden = false;
+      message(gateMessage, 'Paiement confirmé. Saisissez le code reçu par e-mail ou demandez un nouveau code.');
+      lock(false);
+      if (new URLSearchParams(location.search).has('paiement')) await checkPayment();
+      return;
+    }
     $('gate-payment').hidden = false;
-    message(gateMessage, '');
+    $('gate-code').hidden = true;
+    var heading = $('gate-payment').querySelector('h2');
+    if (heading) heading.textContent = accessResult.data ? 'Renouveler mon abonnement' : 'Activer mon espace';
+    if (subscriptionExpiresAt) {
+      message(gateMessage, 'Votre abonnement a expiré le ' + formatSubscriptionDate(subscriptionExpiresAt) + '. Vos données restent conservées. Payez 1 100 FCFA pour retrouver l’accès.');
+    } else {
+      message(gateMessage, 'Payez 1 100 FCFA pour accéder à Mon Book pendant un mois calendaire.');
+    }
     lock(false);
     if (new URLSearchParams(location.search).has('paiement')) await checkPayment();
   }
@@ -331,12 +392,13 @@
     try {
       var data = await payment('status');
       if (data.status === 'paid') {
+        if (data.expiresAt) subscriptionExpiresAt = data.expiresAt;
         lock(false);
         await sendCode();
         return;
       }
-      if (data.status === 'pending') message(gateMessage, 'Paiement en attente de confirmation. Si vous avez déjà payé, ne payez pas deux fois : patientez puis vérifiez à nouveau.');
-      else message(gateMessage, 'Aucun paiement confirmé pour ce compte.');
+      if (data.status === 'pending') message(gateMessage, data.message || 'Paiement en attente de confirmation. Si vous avez déjà payé, ne payez pas deux fois : patientez puis vérifiez à nouveau.');
+      else message(gateMessage, data.message || 'Aucun paiement confirmé pour ce compte.');
     } catch (error) { message(gateMessage, error.message || 'Vérification impossible.', true); }
     lock(false);
   }
@@ -346,6 +408,7 @@
     try {
       var data = await payment('start');
       if (data.status === 'paid') {
+        if (data.expiresAt) subscriptionExpiresAt = data.expiresAt;
         lock(false);
         await sendCode();
         return;
@@ -366,7 +429,10 @@
     lock(true); message(gateMessage, 'Envoi du code…');
     try {
       var data = await activation('send');
-      if (data.active) { await openBook(); return; }
+      if (data.active) {
+        if (subscriptionExpiresAt && Date.parse(subscriptionExpiresAt) > Date.now()) { location.reload(); return; }
+        await openBook(); return;
+      }
       $('gate-payment').hidden = true;
       $('gate-code').hidden = false;
       message(gateMessage, data.message);
