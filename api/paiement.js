@@ -8,7 +8,8 @@ const SUPABASE_PUBLIC_KEY =
 
 const ORIGIN = 'https://mon-book.vercel.app';
 
-const AMOUNT = 210000;
+const AMOUNT = 110000;
+const SUPPORTED_AMOUNTS = new Set([110000, 210000]);
 
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -165,7 +166,7 @@ module.exports = async function (req, res) {
       const rows = await db(
         'mon_book_payments?user_id=eq.' +
         user.id +
-        '&status=in.(creating,pending,paid)' +
+        '&status=in.(creating,pending)' +
         '&select=id,reference,status,payment_request_id,provider_transaction_id,amount_cents,currency,redirect_url'
       );
 
@@ -176,11 +177,38 @@ module.exports = async function (req, res) {
       return rows[0] || null;
     }
 
+    async function currentSubscription() {
+      const rows = await db(
+        'mon_book_subscriptions?user_id=eq.' +
+        user.id +
+        '&select=user_id,anchor_day,expires_at,last_payment_id'
+      );
+      if (!Array.isArray(rows) || rows.length > 1) {
+        throw new Error('db_error');
+      }
+      return rows[0] || null;
+    }
+
+    function subscriptionIsActive(subscription) {
+      const expiry = subscription && Date.parse(subscription.expires_at || '');
+      return Number.isFinite(expiry) && expiry > Date.now();
+    }
+
+    function formatExpiry(subscription) {
+      const date = new Date(subscription && subscription.expires_at || '');
+      return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString('fr-FR', {
+        timeZone: 'Africa/Abidjan', day: 'numeric', month: 'long', year: 'numeric'
+      });
+    }
+
     async function markPaid(payment, request) {
       const transaction =
         request && request.transaction;
+      const expectedAmount = payment && payment.amount_cents;
 
       if (
+        !Number.isSafeInteger(expectedAmount) ||
+        !SUPPORTED_AMOUNTS.has(expectedAmount) ||
         !request ||
         request.id !== payment.payment_request_id ||
         request.storeId !== storeId ||
@@ -192,48 +220,28 @@ module.exports = async function (req, res) {
         transaction.id.length > 200 ||
         transaction.status !== 'success' ||
         !transaction.amount ||
-        transaction.amount.amount !== AMOUNT ||
+        transaction.amount.amount !== expectedAmount ||
         transaction.amount.currency !== 'XOF' ||
-        payment.amount_cents !== AMOUNT ||
         payment.currency !== 'XOF'
       ) {
         return false;
       }
 
-      const updated = await db(
-        'mon_book_payments?id=eq.' +
-        payment.id +
-        '&status=eq.pending' +
-        '&select=status,provider_transaction_id',
+      const result = await db(
+        'rpc/mon_book_apply_subscription_payment',
         {
-          method: 'PATCH',
+          method: 'POST',
           headers: {
             Prefer: 'return=representation'
           },
           body: JSON.stringify({
-            status: 'paid',
-            provider_transaction_id: transaction.id,
-            paid_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            p_payment_id: payment.id,
+            p_transaction_id: transaction.id
           })
         }
       );
 
-      if (
-        Array.isArray(updated) &&
-        updated.length === 1
-      ) {
-        return true;
-      }
-
-      const current = await currentPayment();
-
-      return !!(
-        current &&
-        current.status === 'paid' &&
-        current.provider_transaction_id ===
-          transaction.id
-      );
+      return result === 'applied' || result === 'already_applied';
     }
 
     async function reconcile(payment) {
@@ -316,50 +324,40 @@ module.exports = async function (req, res) {
         payment = await reconcile(payment);
       }
 
-      if (!payment) {
-        return reply(
-          200,
-          'Aucun paiement confirmé.',
-          { status: 'not_started' }
-        );
+      if (payment && payment.status === 'pending') {
+        const pendingMessage = payment.amount_cents === AMOUNT
+          ? 'Votre paiement de 1 100 FCFA est en attente de confirmation.'
+          : 'Une ancienne demande de paiement de ' + (payment.amount_cents === 210000 ? '2 100' : '1 100') + ' FCFA est encore en cours. Ne payez pas une seconde fois ; vérifiez d’abord son statut.';
+        return reply(200, pendingMessage, {
+          status: 'pending',
+          amountCents: payment.amount_cents
+        });
       }
 
-      if (payment.status === 'paid') {
-        return reply(
-          200,
-          'Paiement confirmé.',
-          { status: 'paid' }
-        );
+      if (payment) {
+        return reply(200, 'Une demande de paiement est en cours de préparation. Ne relancez pas le paiement.', { status: 'pending' });
       }
 
-      return reply(
-        200,
-        'Votre paiement est en attente de confirmation.',
-        { status: 'pending' }
-      );
+      const subscription = await currentSubscription();
+      if (subscriptionIsActive(subscription)) {
+        return reply(200, 'Votre abonnement est actif jusqu’au ' + formatExpiry(subscription) + '.', {
+          status: 'paid',
+          expiresAt: subscription.expires_at
+        });
+      }
+      if (subscription) {
+        return reply(200, 'Votre abonnement a expiré le ' + formatExpiry(subscription) + '. Payez 1 100 FCFA pour le renouveler.', {
+          status: 'expired',
+          expiresAt: subscription.expires_at
+        });
+      }
+      return reply(200, 'Aucun paiement confirmé pour ce compte.', { status: 'not_started' });
     }
 
     if (process.env.JEKO_LIVE_ENABLED !== 'true') {
       return reply(
         503,
         'Les paiements réels ne sont pas encore activés.'
-      );
-    }
-
-    const access = await db(
-      'mon_book_access?user_id=eq.' +
-      user.id +
-      '&select=user_id'
-    );
-
-    if (!Array.isArray(access)) {
-      throw new Error('db_error');
-    }
-
-    if (access.length) {
-      return reply(
-        409,
-        'Votre compte est déjà activé. Aucun paiement ne sera lancé.'
       );
     }
 
@@ -379,30 +377,33 @@ module.exports = async function (req, res) {
     }
 
     if (payment && payment.status === 'pending') {
-      const url = safeUrl(payment.redirect_url);
-
-      if (url) {
-        return reply(
-          200,
-          'Paiement en attente.',
-          {
-            status: 'pending',
-            redirectUrl: url
-          }
-        );
+      if (!SUPPORTED_AMOUNTS.has(payment.amount_cents)) {
+        return reply(409, 'Une ancienne demande doit être vérifiée. Ne payez pas et contactez le support.');
       }
-
-      return reply(
-        409,
-        'Un paiement est déjà en cours. Ne payez pas deux fois.'
-      );
+      if (payment.amount_cents !== AMOUNT) {
+        return reply(409, 'Une demande au tarif précédent de ' + (payment.amount_cents === 210000 ? '2 100' : '1 100') + ' FCFA est encore en cours. Ne payez pas ce lien ; vérifiez d’abord son statut.');
+      }
+      const url = safeUrl(payment.redirect_url);
+      if (url) {
+        return reply(200, 'Paiement en attente.', {
+          status: 'pending',
+          amountCents: payment.amount_cents,
+          redirectUrl: url
+        });
+      }
+      return reply(409, 'Un paiement est déjà en cours. Ne payez pas deux fois.');
     }
 
     if (payment) {
-      return reply(
-        409,
-        'Une demande de paiement est en cours de vérification. Ne payez pas deux fois.'
-      );
+      return reply(409, 'Une demande de paiement est en cours de vérification. Ne payez pas deux fois.');
+    }
+
+    const subscription = await currentSubscription();
+    if (subscriptionIsActive(subscription)) {
+      return reply(200, 'Votre abonnement est actif jusqu’au ' + formatExpiry(subscription) + '.', {
+        status: 'paid',
+        expiresAt: subscription.expires_at
+      });
     }
 
     const reference =
@@ -417,7 +418,9 @@ module.exports = async function (req, res) {
         },
         body: JSON.stringify({
           user_id: user.id,
-          reference: reference
+          reference: reference,
+          amount_cents: AMOUNT,
+          currency: 'XOF'
         })
       }
     );
