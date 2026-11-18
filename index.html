@@ -31,6 +31,8 @@ ul{list-style:none;margin:0;padding:0}
 li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 li:last-child{border-bottom:0}
 li input[type=checkbox]{width:20px;height:20px;accent-color:var(--acc);flex:none}
+li input[type=time]{width:108px;flex:none;padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;font-size:.88rem}
+@media(max-width:420px){li input[type=time]{width:96px;font-size:.82rem}}
 li span{flex:1;overflow-wrap:anywhere}
 li.done span{text-decoration:line-through;color:var(--mute)}
 li time{color:var(--acc);font-weight:600;font-size:.85rem}
@@ -54,7 +56,6 @@ textarea{padding:9px;border:1px solid var(--line);border-radius:8px;background:v
 .tb label{display:flex;align-items:center;gap:4px;font-size:.85rem;color:var(--mute)}
 .tb input[type=color]{width:38px;height:34px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
 #ed{min-height:120px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);overflow-wrap:anywhere}
-#ed:empty:before{content:attr(data-ph);color:var(--mute)}
 .sw{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .sw button{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0;transition:transform .15s}
 .sw button.on{border-color:var(--ink);transform:scale(1.2)}
@@ -75,6 +76,10 @@ button:active{transform:scale(.96)}
 .row input[type=color]{width:38px;height:34px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
 #wpg button{width:38px;height:38px;border-radius:10px}
 #wpp{margin-bottom:14px;animation:fade .3s ease}
+.notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.notification-settings h3{margin:0 0 4px;font-size:1rem}
+.notification-feedback{margin:0;color:var(--mute);font-size:.9rem}
+.notification-feedback.error{color:#c0392b}
 body.anim{background-size:300% 300%!important;animation:gs 14s ease infinite}
 @keyframes gs{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .nt .row button{padding:6px 11px}
@@ -102,7 +107,7 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .account-actions button,.account-bar button{padding:10px 15px;border:1px solid var(--line);border-radius:9px;background:var(--surf);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
 .account-actions button:first-child{background:var(--acc);color:white;border-color:var(--acc)}
 .account-actions button:disabled,.account-bar button:disabled{opacity:.55;cursor:wait}
-#account-message{white-space:pre-line;font-size:.92rem;min-height:1.5em}
+#account-message{white-space:pre-line;font-size:.92rem}
 #account-message.error,#sync-status.error{color:#c0392b}
 .account-bar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:8px 0 18px;padding:10px 12px;border:1px solid var(--line);background:var(--surf);border-radius:10px;font-size:.88rem}
 .account-bar span{overflow-wrap:anywhere}
@@ -117,15 +122,13 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .auth-shell label{display:block;color:#142033;font-weight:600;margin:19px 0 8px}
 .auth-shell input{display:block;width:100%;min-width:0;height:52px;padding:12px 14px;border:1px solid #cdd8df;border-radius:10px;background:#fff;color:#142033;font:inherit}
 .auth-shell input:focus{outline:3px solid #b4e2e4;outline-offset:1px;border-color:#0e7c86}
-.auth-shell .help{display:block;text-align:right;color:#697b88;font-size:.8rem;margin-top:6px}
 .auth-shell .primary{display:block;width:100%;border:0;background:#0e7c86;color:#fff;min-height:52px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer;margin-top:24px}
 .auth-shell .primary:hover{background:#096c74}
 .auth-shell .primary:disabled,.auth-shell .link:disabled{opacity:.55;cursor:wait}
 .auth-shell .switch{text-align:center;font-size:.93rem;color:#5d6b78;margin:24px 0 0}
 .auth-shell .link{display:inline;padding:0;border:0;background:none;color:#0e7c86;font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
-.auth-shell .message{min-height:1.4em;margin:18px 0 0;color:#506575;text-align:center;font-size:.9rem;white-space:pre-line}
+.auth-shell .message{margin:18px 0 0;color:#506575;text-align:center;font-size:.9rem;white-space:pre-line}
 .auth-shell .message.error{color:#b3261e}
-.auth-shell .test-pill{display:block;width:max-content;max-width:100%;margin:0 auto 24px;padding:7px 14px;border:1px solid #9bd3d6;border-radius:999px;background:#e5f6f6;color:#0c6c74;font-size:.84rem;font-weight:700;text-align:center}
 .auth-shell .price{text-align:center;margin:0 0 16px;font-size:1.2rem;font-weight:700;color:#142033}
 .hd{position:relative;padding-right:235px}
 .hd-actions{position:absolute;right:14px;top:12px;display:flex;align-items:center;gap:6px}
@@ -156,9 +159,8 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .budget-envelope.over .budget-track span{background:#c0392b}
 .budget-advice{margin:10px 0 0;padding:10px 12px;border-radius:9px;background:color-mix(in srgb,var(--acc) 10%,var(--surf));color:var(--ink)}
 .budget-advice p{margin:4px 0}
-.budget-feedback{min-height:1.4em;margin:8px 0;color:var(--mute);font-size:.9rem}
+.budget-feedback{min-height:0;margin:0;color:var(--mute);font-size:.9rem}
 .budget-feedback.error{color:#c0392b}
-.budget-privacy{padding:10px 12px;border-left:3px solid var(--acc);background:var(--bg);color:var(--mute);font-size:.88rem}
 .budget-expenses{display:grid;gap:8px;margin-top:10px}
 .budget-expense{display:flex;align-items:flex-start;gap:10px;padding:10px;border-bottom:1px solid var(--line)}
 .budget-expense-main{flex:1;min-width:0}
@@ -173,18 +175,16 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <section id="account-screen" class="auth-shell" aria-labelledby="auth-heading">
   <div class="auth-card">
     <div class="brand">Mon Book</div>
-    <h2 id="auth-heading">Ravi de vous retrouver</h2>
-    <p class="intro" id="auth-description">Connectez-vous à votre espace personnel.</p>
+    <h2 id="auth-heading">Connexion</h2>
     <form id="account-form">
       <label for="account-email">Adresse e-mail</label>
-      <input id="account-email" type="email" autocomplete="email" required placeholder="vous@exemple.com">
+      <input id="account-email" type="email" autocomplete="email" required>
       <label for="account-password">Mot de passe</label>
-      <input id="account-password" type="password" autocomplete="current-password" minlength="8" required placeholder="Votre mot de passe">
-      <small id="password-help" class="help" hidden>8 caractères minimum</small>
+      <input id="account-password" type="password" autocomplete="current-password" minlength="8" required>
       <button type="submit" class="primary" id="auth-submit">Se connecter</button>
     </form>
-    <p class="switch"><span id="auth-switch-label">Pas encore de compte ? </span><button type="button" class="link" id="auth-switch">Créer mon compte</button></p>
-    <p class="message" id="account-message" role="status" aria-live="polite">Chargement…</p>
+    <p class="switch"><button type="button" class="link" id="auth-switch">Créer mon compte</button></p>
+    <p class="message" id="account-message" role="status" aria-live="polite" hidden></p>
   </div>
 </section>
 <section id="gate-screen" class="auth-shell" hidden>
@@ -193,32 +193,29 @@ form[data-time] input[type=text]{flex:1 1 55%}
     <div id="gate-payment">
       <h2>Activer mon espace</h2>
       <p class="price">1 100 FCFA · par mois</p>
-      <span class="test-pill">Paiement sécurisé avec Wave</span>
-      <p class="intro">Après confirmation du paiement, un code sera envoyé à votre adresse e-mail. L’accès est valable un mois calendaire à partir du paiement confirmé et se renouvelle manuellement. Vos données restent conservées si l’accès expire.</p>
+      <p class="intro">Un code est envoyé après confirmation du paiement. Accès valable un mois calendaire dès le paiement confirmé ; renouvellement manuel. Vos données sont conservées après expiration.</p>
       <button type="button" class="primary" id="send-code">Payer 1 100 FCFA avec Wave</button>
       <p class="switch"><button type="button" class="link" id="check-payment">Vérifier mon paiement</button></p>
       <p class="switch"><button type="button" class="link" id="open-code">J’ai déjà reçu un code</button></p>
     </div>
     <div id="gate-code" hidden>
       <h2>Activez votre compte</h2>
-      <p class="intro">Saisissez le code reçu par e-mail pour accéder à votre espace.</p>
       <form id="code-form">
         <label for="activation-code">Code d’activation</label>
-        <input id="activation-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" required placeholder="Entrez votre code à 8 chiffres">
+        <input id="activation-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" required>
         <button type="submit" class="primary" id="verify-code">Activer mon compte</button>
       </form>
-      <p class="switch">Le code est personnel et utilisable une seule fois.</p>
       <p class="switch"><button type="button" class="link" id="resend-code">Renvoyer le code</button></p>
     </div>
-    <p id="gate-message" class="message" role="status" aria-live="polite"></p>
+    <p id="gate-message" class="message" role="status" aria-live="polite" hidden></p>
     <p class="switch"><button type="button" class="link" id="gate-logout">Se déconnecter</button></p>
   </div>
 </section>
 <main id="book-app" hidden>
-<div class="account-bar"><span id="account-email-label"></span><div class="right"><span id="sync-status" role="status" aria-live="polite"></span><button type="button" id="retry-save" hidden>Réessayer</button><button type="button" id="logout-button">Déconnexion</button></div></div>
+<div class="account-bar"><span id="account-email-label"></span><div class="right"><span id="sync-status" role="status" aria-live="polite" hidden></span><button type="button" id="retry-save" hidden>Réessayer</button><button type="button" id="logout-button">Déconnexion</button></div></div>
 <div id="err" hidden></div>
 <div class="hd"><h1 id="book-title">Mon Book</h1><p class="sub" id="who"></p><div class="hd-actions"><button type="button" id="budget-open" class="wpb" aria-label="Ouvrir la page Budget">💰 Budget</button><button id="wp" class="wpb" aria-label="Personnaliser le fond d’écran">⚙️ Paramètres</button></div></div>
-<section id="wpp" class="d" hidden><h2>Personnaliser le fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps"></p></section>
+<section id="wpp" class="d" hidden><h2>Personnaliser le fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps" hidden></p><div class="notification-settings" id="notification-settings"><h3>Rappels</h3><div class="row"><button type="button" id="notification-toggle" aria-pressed="false">Activer les notifications</button></div><p id="notification-status" class="notification-feedback" role="status" aria-live="polite" hidden></p></div></section>
 <div class="tabs" role="tablist">
 <button role="tab" id="t1" aria-selected="true">Ma semaine</button>
 <button role="tab" id="t2" aria-selected="false">Mes objectifs</button>
@@ -230,46 +227,43 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <div id="week" class="grid"></div>
 <div id="goals" class="grid" hidden></div>
 <div id="plan" class="grid" hidden></div>
-<div id="tools" class="grid" hidden><section class="d" style="grid-column:1/-1"><h2>Carnet</h2><form data-t="note" style="flex-direction:column"><input type="text" name="ti" placeholder="Titre" required aria-label="Titre"><div class="tb" role="toolbar" aria-label="Mise en forme"><button type="button" data-cmd="bold" aria-label="Gras"><b>G</b></button><button type="button" data-cmd="italic" aria-label="Italique"><i>I</i></button><button type="button" data-cmd="underline" aria-label="Souligné"><u>S</u></button><select id="sz" aria-label="Taille"><option value="3">Taille</option><option value="2">Petit</option><option value="4">Moyen</option><option value="5">Grand</option><option value="6">Titre</option></select><label>Texte <input type="color" id="fc" value="#0e7c86"></label><label>Fond <input type="color" id="hc" value="#f0c04a"></label><button type="button" data-cmd="removeFormat">Effacer le style</button></div><div id="ed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="Écrivez ici…"></div><div class="sw"><span class="empty">Couleur de la note :</span><button type="button" data-c="" style="background:var(--surf)" class="on" aria-label="Couleur 0"></button><button type="button" data-c="#fde68a" style="background:#fde68a" class="" aria-label="Couleur 1"></button><button type="button" data-c="#bfe3d0" style="background:#bfe3d0" class="" aria-label="Couleur 2"></button><button type="button" data-c="#bcd7f5" style="background:#bcd7f5" class="" aria-label="Couleur 3"></button><button type="button" data-c="#f7c6d4" style="background:#f7c6d4" class="" aria-label="Couleur 4"></button><button type="button" data-c="#d9c8f3" style="background:#d9c8f3" class="" aria-label="Couleur 5"></button></div><div class="row"><button id="nb" class="on">Ajouter</button><button type="button" id="nc" hidden>Annuler</button></div></form></section><div id="tl" style="display:contents"></div></div>
+<div id="tools" class="grid" hidden><section class="d" style="grid-column:1/-1"><h2>Carnet</h2><form data-t="note" style="flex-direction:column"><input type="text" name="ti" required aria-label="Titre" placeholder="Titre"><div class="tb" role="toolbar" aria-label="Mise en forme"><button type="button" data-cmd="bold" aria-label="Gras"><b>G</b></button><button type="button" data-cmd="italic" aria-label="Italique"><i>I</i></button><button type="button" data-cmd="underline" aria-label="Souligné"><u>S</u></button><select id="sz" aria-label="Taille"><option value="3">Taille</option><option value="2">Petit</option><option value="4">Moyen</option><option value="5">Grand</option><option value="6">Titre</option></select><label>Texte <input type="color" id="fc" value="#0e7c86"></label><label>Fond <input type="color" id="hc" value="#f0c04a"></label><button type="button" data-cmd="removeFormat">Effacer le style</button></div><div id="ed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note"></div><div class="sw"><span class="empty">Couleur de la note :</span><button type="button" data-c="" style="background:var(--surf)" class="on" aria-label="Couleur 0"></button><button type="button" data-c="#fde68a" style="background:#fde68a" class="" aria-label="Couleur 1"></button><button type="button" data-c="#bfe3d0" style="background:#bfe3d0" class="" aria-label="Couleur 2"></button><button type="button" data-c="#bcd7f5" style="background:#bcd7f5" class="" aria-label="Couleur 3"></button><button type="button" data-c="#f7c6d4" style="background:#f7c6d4" class="" aria-label="Couleur 4"></button><button type="button" data-c="#d9c8f3" style="background:#d9c8f3" class="" aria-label="Couleur 5"></button></div><div class="row"><button id="nb" class="on">Ajouter</button><button type="button" id="nc" hidden>Annuler</button></div></form></section><div id="tl" style="display:contents"></div></div>
 <div id="budget" class="grid" hidden>
   <section class="d" style="grid-column:1/-1">
-    <div class="budget-page-head"><h2>Mon budget du mois</h2><button type="button" id="budget-back" class="wpb">← Retour au carnet</button></div>
-    <p class="empty">Choisissez votre situation et indiquez le montant réellement disponible. Mon Book calcule les enveloppes en FCFA selon le modèle choisi.</p>
+    <div class="budget-page-head"><h2>Situation et répartition</h2><button type="button" id="budget-back" class="wpb">← Retour au carnet</button></div>
     <div class="budget-controls">
-      <label for="budget-month">Mois suivi<input id="budget-month" type="month"></label>
-      <label for="budget-profile">Votre situation<select id="budget-profile"></select></label>
-      <label for="budget-available">Montant disponible pour le mois (FCFA)<input id="budget-available" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="Ex. 100000"></label>
-      <label for="budget-saved">Épargne réellement mise de côté (FCFA)<input id="budget-saved" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="Ex. 10000"></label>
+      <label for="budget-month">Mois<input id="budget-month" type="month"></label>
+      <label for="budget-profile">Profil<select id="budget-profile"></select></label>
+      <label for="budget-available">Disponible (FCFA)<input id="budget-available" type="number" min="0" max="1000000000" step="1" inputmode="numeric"></label>
+      <label for="budget-saved">Épargne mise de côté (FCFA)<input id="budget-saved" type="number" min="0" max="1000000000" step="1" inputmode="numeric"></label>
     </div>
-    <p id="budget-profile-note" class="empty"></p>
-    <h3>Répartition de départ — modifiable</h3>
+    <h3>Répartition</h3>
     <div id="budget-ratios" class="budget-ratios"></div>
-    <p id="budget-ratio-feedback" class="budget-feedback" role="status" aria-live="polite"></p>
-    <p class="budget-privacy">Les calculs reposent uniquement sur les montants saisis. N’entrez aucun numéro de compte ni code bancaire. La classe « fixe/variable » et le repère « utile/à surveiller » servent au suivi : aucune dépense ni aucun paiement ne sont déclenchés automatiquement.</p>
-    <p id="budget-status" class="budget-feedback" role="status" aria-live="polite"></p>
+    <p id="budget-ratio-feedback" class="budget-feedback" role="status" aria-live="polite" hidden></p>
+    <p id="budget-status" class="budget-feedback" role="status" aria-live="polite" hidden></p>
   </section>
-  <section class="d" style="grid-column:1/-1">
+  <section id="budget-overview" class="d" style="grid-column:1/-1" hidden>
     <h2>Résumé et enveloppes</h2>
     <div id="budget-summary" class="budget-stats"></div>
     <div id="budget-envelopes" class="budget-envelopes"></div>
-    <div id="budget-analytics" class="budget-advice"></div>
-    <div id="budget-advice" class="budget-advice"></div>
+    <div id="budget-analytics" class="budget-advice" hidden></div>
+    <div id="budget-advice" class="budget-advice" hidden></div>
   </section>
   <section class="d" style="grid-column:1/-1">
-    <h2>Noter une dépense</h2>
+    <h2>Ajouter une dépense</h2>
     <form id="budget-expense-form" class="budget-expense-form">
-      <label for="budget-expense-label">Libellé<input id="budget-expense-label" name="label" type="text" maxlength="80" required placeholder="Ex. transport de la semaine"></label>
+      <label for="budget-expense-label">Libellé<input id="budget-expense-label" name="label" type="text" maxlength="80" required></label>
       <label for="budget-expense-amount">Montant (FCFA)<input id="budget-expense-amount" name="amount" type="number" min="1" max="1000000000" step="1" inputmode="numeric" required></label>
       <label for="budget-expense-date">Date<input id="budget-expense-date" name="date" type="date" required></label>
       <label for="budget-expense-category">Catégorie<select id="budget-expense-category" name="category" required></select></label>
       <label for="budget-expense-nature">Type<select id="budget-expense-nature" name="nature"><option value="fixed">Fixe</option><option value="variable" selected>Variable</option></select></label>
-      <label for="budget-expense-priority">Suivi<select id="budget-expense-priority" name="priority"><option value="useful">Utile / nécessaire</option><option value="watch" selected>À surveiller</option></select></label>
+      <label for="budget-expense-priority">Priorité<select id="budget-expense-priority" name="priority"><option value="useful">Utile / nécessaire</option><option value="watch" selected>À surveiller</option></select></label>
       <button type="submit">Ajouter la dépense</button>
     </form>
-    <p id="budget-expense-feedback" class="budget-feedback" role="status" aria-live="polite"></p>
+    <p id="budget-expense-feedback" class="budget-feedback" role="status" aria-live="polite" hidden></p>
   </section>
-  <section class="d" style="grid-column:1/-1">
-    <h2>Dépenses notées pour ce mois</h2>
+  <section id="budget-expense-list-section" class="d" style="grid-column:1/-1" hidden>
+    <h2>Dépenses</h2>
     <div id="budget-expenses" class="budget-expenses"></div>
   </section>
 </div>
@@ -279,8 +273,8 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <script src="budget-model.js"></script>
 <script>
 function startBook(initialData, saveWorkspace) {
-var DAYS=[["lun","Lundi","18h – 21h"],["mar","Mardi","18h – 21h"],["mer","Mercredi","18h – 21h"],["jeu","Jeudi","18h – 21h"],["ven","Vendredi","18h – 21h"],["sam","Samedi","9h – 13h"]];
-var HOR=[["sem","Cette semaine","Ex. finir mon exposé"],["mois","Ce semestre","Ex. réussir mes examens"],["long","Long terme","Ex. décrocher mon stage"]];
+var DAYS=[["lun","Lundi"],["mar","Mardi"],["mer","Mercredi"],["jeu","Jeudi"],["ven","Vendredi"],["sam","Samedi"]];
+var HOR=[["sem","Cette semaine"],["mois","Ce semestre"],["long","Long terme"]];
 var S=initialData || {};
 if(!S||typeof S!=="object"||Array.isArray(S))S={};
 ["tasks","goals","plan","focus","defi","cfg","save","wp"].forEach(function(k){if(!S[k]||typeof S[k]!=="object"||Array.isArray(S[k]))S[k]={}});
@@ -308,6 +302,8 @@ function getBudgetPeriod(key){
   return period;
 }
 function save(){saveWorkspace(S)}
+function newTaskId(){return window.crypto&&typeof window.crypto.randomUUID==="function"?window.crypto.randomUUID():"task-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,12)}
+function currentTimeZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"Africa/Abidjan"}catch(e){return "Africa/Abidjan"}}
 var wk=0,JD=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],MO=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 function iso(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
 function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n)}
@@ -315,11 +311,15 @@ function parseISO(k){var p=k.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
 function mondayD(d){var m=new Date(d.getFullYear(),d.getMonth(),d.getDate());m.setDate(m.getDate()-((m.getDay()+6)%7));return m}
 function monday(o){return addDays(mondayD(new Date()),7*o)}
 function lab(k){var d=parseISO(k);return JD[d.getDay()]+" "+d.getDate()+" "+MO[d.getMonth()]}
-DAYS.forEach(function(d,i){var a=S.tasks[d[0]];if(Array.isArray(a)){if(a.length){var k=iso(addDays(monday(0),i));S.tasks[k]=(S.tasks[k]||[]).concat(a)}delete S.tasks[d[0]]}});
+var tasksNeedSave=false;
+DAYS.forEach(function(d,i){var a=S.tasks[d[0]];if(Array.isArray(a)){if(a.length){var k=iso(addDays(monday(0),i));S.tasks[k]=(S.tasks[k]||[]).concat(a);tasksNeedSave=true}delete S.tasks[d[0]]}});
+Object.keys(S.tasks).forEach(function(k){S.tasks[k].forEach(function(task){if(task&&typeof task==="object"&&!task.id){task.id=newTaskId();tasksNeedSave=true}if(task&&typeof task==="object"&&!task.tz){task.tz="Africa/Abidjan";tasksNeedSave=true}})});
+if(tasksNeedSave)save();
 function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function bookSubline(){return [S.cfg.name,S.cfg.field].filter(Boolean).join(" · ")}
 function list(arr,store,key){
-  if(!arr.length)return '<p class="empty">Rien de prévu. Ajoutez une ligne.</p>';
-  return '<ul>'+arr.map(function(x,i){return '<li class="'+(x.d?'done':'')+'"><input type="checkbox" data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" '+(x.d?'checked':'')+' aria-label="Terminé"><span>'+(x.h?'<time>'+x.h+'</time> ':'')+esc(x.t)+'</span><button data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" data-del="1" aria-label="Supprimer">×</button></li>'}).join('')+'</ul>';
+  if(!arr.length)return '';
+  return '<ul>'+arr.map(function(x,i){var timeControl=store==="tasks"?'<input type="time" data-task-time data-k="'+key+'" data-i="'+i+'" value="'+esc(String(x.h||""))+'" required aria-label="Heure de '+esc(String(x.t||"tâche"))+'">':'';return '<li class="'+(x.d?'done':'')+'"><input type="checkbox" data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" '+(x.d?'checked':'')+' aria-label="Terminé">'+timeControl+'<span>'+esc(String(x.t||""))+'</span><button data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" data-del="1" aria-label="Supprimer">×</button></li>'}).join('')+'</ul>';
 }
 function render(){
   var all=0,done=0;
@@ -327,26 +327,26 @@ function render(){
   document.getElementById("wl").textContent="Semaine du "+mon.getDate()+(mon.getMonth()!==sun.getMonth()?" "+MO[mon.getMonth()]:"")+" au "+sun.getDate()+" "+MO[sun.getMonth()]+" "+sun.getFullYear();
   document.getElementById("week").innerHTML=DAYS.map(function(d,i){
     var dt=addDays(mon,i),k=iso(dt),a=S.tasks[k]||[];a.forEach(function(x){all++;if(x.d)done++});
-    return '<section class="d'+(k===TD?' today':'')+'"><h2>'+d[1]+' <small>'+dt.getDate()+' '+MO[dt.getMonth()]+'</small></h2>'+(S.cfg.cls[d[0]]?'<div class="cls">Cours '+esc(S.cfg.cls[d[0]])+'<small>Le reste de la journée est à vous</small></div>':'')+list(a,"tasks",k)+
-    '<form data-s="tasks" data-k="'+k+'" data-time="1"><input type="date" value="'+k+'" aria-label="Date"><input type="time" aria-label="Heure"><input type="text" placeholder="Réviser, projet, sport…" aria-label="Tâche" required><button>Ajouter</button></form></section>';
+    return '<section class="d'+(k===TD?' today':'')+'"><h2>'+d[1]+' <small>'+dt.getDate()+' '+MO[dt.getMonth()]+'</small></h2>'+(S.cfg.cls[d[0]]?'<div class="cls">Cours '+esc(S.cfg.cls[d[0]])+'</div>':'')+list(a,"tasks",k)+
+    '<form data-s="tasks" data-k="'+k+'" data-time="1"><input type="date" value="'+k+'" aria-label="Date" required><input type="time" aria-label="Heure" required><input type="text" aria-label="Tâche" required placeholder="Tâche"><button>Ajouter</button></form></section>';
   }).join('');
   document.getElementById("goals").innerHTML=HOR.map(function(h){
     var a=S.goals[h[0]]||[];a.forEach(function(x){all++;if(x.d)done++});
     return '<section class="d"><h2>'+h[1]+'</h2>'+list(a,"goals",h[0])+
-    '<form data-s="goals" data-k="'+h[0]+'"><input type="text" placeholder="'+h[2]+'" aria-label="Objectif" required><button>Ajouter</button></form></section>';
+    '<form data-s="goals" data-k="'+h[0]+'"><input type="text" aria-label="Objectif" required placeholder="Objectif"><button>Ajouter</button></form></section>';
   }).join('');
   var ph='';
   var T=TD,tn=S.tasks[T]||[];
-  ph+='<section class="d" style="grid-column:1/-1"><h2>Aujourd’hui <small>'+lab(T)+'</small></h2>'+(tn.length?list(tn,"tasks",T):'<p class="empty">Rien de prévu aujourd’hui. Ajoutez une tâche dans « Ma semaine ».</p>')+'</section>';
+  if(tn.length)ph+='<section class="d" style="grid-column:1/-1"><h2>Aujourd’hui <small>'+lab(T)+'</small></h2>'+list(tn,"tasks",T)+'</section>';
   var mine='';Object.keys(S.tasks).filter(function(k){return /^\d{4}-\d{2}-\d{2}$/.test(k)&&k>T&&S.tasks[k].length}).sort().forEach(function(k){mine+='<section class="d"><h2>'+lab(k)+'</h2>'+list(S.tasks[k],"tasks",k)+'</section>'});
   HOR.forEach(function(h){var a=S.goals[h[0]]||[];if(a.length)mine+='<section class="d"><h2>Objectifs · '+h[1]+'</h2>'+list(a,"goals",h[0])+'</section>'});
-  ph+='<section class="d" style="grid-column:1/-1"><h2>Ce que j’ai programmé</h2><p class="empty">'+(mine?'Tout ce que vous ajoutez dans « Ma semaine » et « Mes objectifs » apparaît ici automatiquement. Cochez ou supprimez directement ici.':'Rien de programmé pour l’instant. Ajoutez des tâches dans « Ma semaine » ou des objectifs dans « Mes objectifs » : ils apparaîtront ici automatiquement.')+'</p></section>'+mine;
+  ph+=mine;
   document.getElementById("plan").innerHTML=ph;renderTools();
   document.getElementById("prog").style.width=(all?Math.round(done*100/all):0)+"%";
 }
 function budgetMoney(value){return Math.round(Number(value)||0).toLocaleString("fr-FR")+" FCFA"}
 function budgetDateForMonth(key){var today=localDateKey(new Date());return today.slice(0,7)===key?today:key+"-01"}
-function budgetFeedback(id,text,isError){var node=document.getElementById(id);if(!node)return;node.textContent=text||"";node.classList.toggle("error",!!isError)}
+function budgetFeedback(id,text,isError){var node=document.getElementById(id);if(!node)return;node.textContent=text||"";node.classList.toggle("error",!!isError);node.hidden=!text}
 function renderBudget(){
   if(!BM){budgetFeedback("budget-status","Le module Budget n’a pas pu être chargé. Actualisez la page ou contactez le support.",true);return}
   var period=getBudgetPeriod();
@@ -359,12 +359,11 @@ function renderBudget(){
   document.getElementById("budget-month").value=activeBudgetMonth;
   document.getElementById("budget-available").value=period.available||"";
   document.getElementById("budget-saved").value=period.saved||"";
-  document.getElementById("budget-profile-note").textContent=BM.getProfile(period.profile).note+" Les pourcentages sont des repères modifiables, pas une règle obligatoire.";
   document.getElementById("budget-ratios").innerHTML=BM.BUCKETS.map(function(bucket){return '<div class="budget-ratio"><label for="budget-ratio-'+bucket.id+'">'+esc(bucket.label)+'</label><input id="budget-ratio-'+bucket.id+'" type="number" min="0" max="100" step="1" inputmode="numeric" data-budget-ratio="'+bucket.id+'" value="'+period.ratios[bucket.id]+'" aria-label="Pourcentage pour '+esc(bucket.label)+'"></div>'}).join("");
-  budgetFeedback("budget-ratio-feedback","Répartition : 100 %. Les montants cibles se recalculent automatiquement.",false);
+  budgetFeedback("budget-ratio-feedback","",false);
   var categorySelect=document.getElementById("budget-expense-category");
   if(!categorySelect.dataset.ready){
-    categorySelect.innerHTML='<option value="">Choisir une catégorie</option>'+BM.CATEGORIES.map(function(category){return '<option value="'+esc(category.id)+'">'+esc(category.label)+'</option>'}).join("");
+    categorySelect.innerHTML='<option value=""></option>'+BM.CATEGORIES.map(function(category){return '<option value="'+esc(category.id)+'">'+esc(category.label)+'</option>'}).join("");
     categorySelect.dataset.ready="1";
   }
   var dateInput=document.getElementById("budget-expense-date");
@@ -376,8 +375,9 @@ function updateBudgetSummary(){
   if(!BM)return;
   var result=BM.calculate(getBudgetPeriod());
   var period=result.period,available=period.available;
+  var overview=document.getElementById("budget-overview");overview.hidden=!(available>0||result.totalExpenses>0||result.saved>0);
   var summary=document.getElementById("budget-summary");
-  summary.innerHTML='<div class="budget-stat"><span>Disponible ce mois</span><strong>'+budgetMoney(available)+'</strong></div><div class="budget-stat"><span>Dépenses notées</span><strong>'+budgetMoney(result.totalExpenses)+'</strong></div><div class="budget-stat"><span>Épargne mise de côté</span><strong>'+budgetMoney(result.saved)+'</strong></div><div class="budget-stat"><span>Reste après dépenses et épargne</span><strong class="'+(result.remainingOverall<0?'error':'')+'">'+budgetMoney(result.remainingOverall)+'</strong></div>';
+  summary.innerHTML='<div class="budget-stat"><span>Disponible</span><strong>'+budgetMoney(available)+'</strong></div><div class="budget-stat"><span>Dépenses</span><strong>'+budgetMoney(result.totalExpenses)+'</strong></div><div class="budget-stat"><span>Épargne mise de côté</span><strong>'+budgetMoney(result.saved)+'</strong></div><div class="budget-stat"><span>Reste après dépenses et épargne</span><strong class="'+(result.remainingOverall<0?'error':'')+'">'+budgetMoney(result.remainingOverall)+'</strong></div>';
   document.getElementById("budget-envelopes").innerHTML=BM.BUCKETS.map(function(bucket){
     var target=result.targets[bucket.id],actual=result.actualByBucket[bucket.id],remaining=result.remainingByBucket[bucket.id];
     var ratio=result.ratios[bucket.id],over=remaining<0;
@@ -385,30 +385,28 @@ function updateBudgetSummary(){
     var actualWord=bucket.id==="savings"?"Mis de côté":"Dépensé";
     var actualRatio=available>0?(actual*100/available).toLocaleString("fr-FR",{maximumFractionDigits:1})+" % du disponible":"—";
     var balance=remaining>=0?"Reste dans l’enveloppe : "+budgetMoney(remaining):"Dépassement : "+budgetMoney(Math.abs(remaining));
-    return '<article class="budget-envelope'+(over?' over':'')+'"><h3>'+esc(bucket.label)+'</h3><p>Repère · '+ratio+' % · <strong>'+budgetMoney(target)+'</strong></p><div class="budget-track" role="progressbar" aria-label="'+esc(bucket.label)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+width+'"><span style="width:'+width+'%"></span></div><p>'+actualWord+' : <strong>'+budgetMoney(actual)+'</strong> · '+actualRatio+'</p><p>'+balance+'</p></article>';
+    return '<article class="budget-envelope'+(over?' over':'')+'"><h3>'+esc(bucket.label)+'</h3><p>Cible · '+ratio+' % · <strong>'+budgetMoney(target)+'</strong></p><div class="budget-track" role="progressbar" aria-label="'+esc(bucket.label)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+width+'"><span style="width:'+width+'%"></span></div><p>'+actualWord+' : <strong>'+budgetMoney(actual)+'</strong> · '+actualRatio+'</p><p>'+balance+'</p></article>';
   }).join("");
   var categoryRows=BM.CATEGORIES.map(function(category){return{category:category,amount:result.spentByCategory[category.id]||0}}).filter(function(row){return row.amount>0}).sort(function(a,b){return b.amount-a.amount});
-  var categoryHtml=categoryRows.length?categoryRows.map(function(row){var share=available>0?(row.amount*100/available).toLocaleString("fr-FR",{maximumFractionDigits:1})+" % du disponible":"—";return '<p>'+esc(row.category.label)+' : '+budgetMoney(row.amount)+' · '+share+'</p>'}).join(""):'<p>Aucune dépense notée par catégorie pour le moment.</p>';
-  document.getElementById("budget-analytics").innerHTML='<strong>Nature des charges et ratios par poste</strong><p>Fixes : '+budgetMoney(result.totals.fixed)+' · Variables : '+budgetMoney(result.totals.variable)+'</p><p>Marquées utiles : '+budgetMoney(result.totals.useful)+' · À surveiller : '+budgetMoney(result.totals.watch)+'</p>'+categoryHtml;
+  var categoryHtml=categoryRows.length?categoryRows.map(function(row){var share=available>0?(row.amount*100/available).toLocaleString("fr-FR",{maximumFractionDigits:1})+" % du disponible":"—";return '<p>'+esc(row.category.label)+' : '+budgetMoney(row.amount)+' · '+share+'</p>'}).join(""):'';
+  var analytics=document.getElementById("budget-analytics");analytics.innerHTML='<strong>Dépenses par catégorie</strong><p>Fixes : '+budgetMoney(result.totals.fixed)+' · Variables : '+budgetMoney(result.totals.variable)+'</p><p>Utiles / nécessaires : '+budgetMoney(result.totals.useful)+' · À surveiller : '+budgetMoney(result.totals.watch)+'</p>'+categoryHtml;analytics.hidden=result.totalExpenses===0;
   var tips=[];
-  if(available<=0)tips.push("Saisissez votre salaire net, votre argent de poche ou le montant réellement disponible pour calculer les enveloppes.");
-  if(available>0&&result.totalExpenses===0)tips.push("Ajoutez vos dépenses au fur et à mesure pour voir les calculs se mettre à jour.");
-  if(result.remainingOverall<0)tips.push("Les dépenses et l’épargne saisies dépassent le montant disponible de "+budgetMoney(Math.abs(result.remainingOverall))+". Vérifiez les montants ou ajustez votre répartition.");
-  BM.BUCKETS.forEach(function(bucket){var diff=result.remainingByBucket[bucket.id];if(diff<0)tips.push("L’enveloppe « "+bucket.label+" » dépasse son repère de "+budgetMoney(Math.abs(diff))+".")});
-  if(available>0&&period.ratios.savings>0&&result.remainingByBucket.savings>0)tips.push("Pour atteindre le repère d’épargne choisi, il reste "+budgetMoney(result.remainingByBucket.savings)+" à mettre de côté — uniquement si cela correspond à votre situation.");
-  if(available>0&&result.totalExpenses>0&&result.remainingOverall>=0&&!BM.BUCKETS.some(function(bucket){return result.remainingByBucket[bucket.id]<0}))tips.push("Les montants notés restent dans les enveloppes choisies pour l’instant. Ces repères sont modifiables et ne constituent pas un conseil financier personnalisé.");
-  document.getElementById("budget-advice").innerHTML=tips.map(function(tip){return '<p>'+esc(tip)+'</p>'}).join("");
+  if((result.totalExpenses>0||result.saved>0)&&result.remainingOverall<0)tips.push("Le total dépasse le montant disponible de "+budgetMoney(Math.abs(result.remainingOverall))+". Vérifiez les montants ou ajustez la répartition.");
+  BM.BUCKETS.forEach(function(bucket){var diff=result.remainingByBucket[bucket.id];if(diff<0&&(available>0||result.actualByBucket[bucket.id]>0))tips.push("L’enveloppe « "+bucket.label+" » dépasse sa cible de "+budgetMoney(Math.abs(diff))+".")});
+  var advice=document.getElementById("budget-advice");advice.innerHTML=tips.map(function(tip){return '<p>'+esc(tip)+'</p>'}).join("");advice.hidden=!tips.length;
 }
 function renderBudgetExpenses(){
   if(!BM)return;
-  var period=getBudgetPeriod(),listNode=document.getElementById("budget-expenses");
+  var period=getBudgetPeriod(),listNode=document.getElementById("budget-expenses"),section=document.getElementById("budget-expense-list-section");
   var items=period.expenses.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"")||String(b.id).localeCompare(String(a.id))});
-  if(!items.length){listNode.innerHTML='<p class="empty">Aucune dépense notée pour ce mois.</p>';return}
+  if(!items.length){listNode.innerHTML='';section.hidden=true;return}
+  section.hidden=false;
   listNode.innerHTML=items.map(function(item){
     var category=BM.getCategory(item.category),bucket=BM.BUCKETS.filter(function(value){return value.id===category.bucket})[0];
-    var date=item.date?new Date(item.date+"T00:00:00").toLocaleDateString("fr-FR",{timeZone:"Africa/Abidjan",day:"numeric",month:"short"}):"Date non précisée";
+    var date=item.date?new Date(item.date+"T00:00:00").toLocaleDateString("fr-FR",{timeZone:"Africa/Abidjan",day:"numeric",month:"short"}):"";
     var nature=item.nature==="fixed"?"Fixe":"Variable",priority=item.priority==="watch"?"À surveiller":"Utile / nécessaire";
-    return '<div class="budget-expense"><div class="budget-expense-main"><strong>'+esc(item.label)+'</strong><span class="budget-expense-meta">'+esc(date)+' · '+esc(category.label)+' · '+esc(bucket?bucket.label:"Budget")+' · '+nature+' · '+priority+'</span></div><span class="budget-expense-amount">'+budgetMoney(item.amount)+'</span><button type="button" data-budget-delete="'+esc(item.id)+'" aria-label="Supprimer '+esc(item.label)+'">×</button></div>';
+    var metadata=[date,category.label,bucket&&bucket.label,nature,priority].filter(Boolean).map(esc).join(" · ");
+    return '<div class="budget-expense"><div class="budget-expense-main"><strong>'+esc(item.label)+'</strong><span class="budget-expense-meta">'+metadata+'</span></div><span class="budget-expense-amount">'+budgetMoney(item.amount)+'</span><button type="button" data-budget-delete="'+esc(item.id)+'" aria-label="Supprimer '+esc(item.label)+'">×</button></div>';
   }).join("");
 }
 function setupBudgetEvents(){
@@ -420,22 +418,22 @@ function setupBudgetEvents(){
   });
   monthInput.addEventListener("change",function(){
     if(!validBudgetMonth(this.value)){budgetFeedback("budget-status","Choisissez un mois valide.",true);this.value=activeBudgetMonth;return}
-    activeBudgetMonth=this.value;S.budget.activeMonth=activeBudgetMonth;getBudgetPeriod();save();renderBudget();budgetFeedback("budget-status","Mois sélectionné. Les données des autres mois restent conservées.",false);
+    activeBudgetMonth=this.value;S.budget.activeMonth=activeBudgetMonth;getBudgetPeriod();save();renderBudget();budgetFeedback("budget-status","",false);
   });
   availableInput.addEventListener("input",function(){
     if(this.value!==""&&(!/^\d+$/.test(this.value)||Number(this.value)>BM.MAX_AMOUNT)){budgetFeedback("budget-status","Saisissez un montant entier positif en FCFA.",true);return}
-    getBudgetPeriod().available=BM.toAmount(this.value);save();budgetFeedback("budget-status","Montant enregistré ; les enveloppes sont recalculées automatiquement.",false);updateBudgetSummary();
+    getBudgetPeriod().available=BM.toAmount(this.value);save();budgetFeedback("budget-status","",false);updateBudgetSummary();
   });
   savedInput.addEventListener("input",function(){
     if(this.value!==""&&(!/^\d+$/.test(this.value)||Number(this.value)>BM.MAX_AMOUNT)){budgetFeedback("budget-status","Saisissez un montant entier positif en FCFA.",true);return}
-    getBudgetPeriod().saved=BM.toAmount(this.value);save();budgetFeedback("budget-status","Épargne mise à jour.",false);updateBudgetSummary();
+    getBudgetPeriod().saved=BM.toAmount(this.value);save();budgetFeedback("budget-status","",false);updateBudgetSummary();
   });
   ratioBox.addEventListener("input",function(event){
     var input=event.target.closest("[data-budget-ratio]");if(!input)return;
     var ratios={},valid=true,total=0;
     BM.BUCKETS.forEach(function(bucket){var node=ratioBox.querySelector('[data-budget-ratio="'+bucket.id+'"]');if(!node||node.value===""||!/^\d+$/.test(node.value)){valid=false;return}var number=Number(node.value);if(number<0||number>100){valid=false;return}ratios[bucket.id]=number;total+=number});
     if(!valid||total!==100){budgetFeedback("budget-ratio-feedback","Les pourcentages doivent être des nombres entiers et totaliser exactement 100 %.",true);return}
-    var updatedPeriod=getBudgetPeriod();updatedPeriod.ratios=ratios;S.budget.defaultProfile=updatedPeriod.profile;S.budget.defaultRatios=BM.copyRatios(ratios);save();budgetFeedback("budget-ratio-feedback","Répartition enregistrée : 100 %. Les montants cibles sont recalculés.",false);updateBudgetSummary();
+    var updatedPeriod=getBudgetPeriod();updatedPeriod.ratios=ratios;S.budget.defaultProfile=updatedPeriod.profile;S.budget.defaultRatios=BM.copyRatios(ratios);save();budgetFeedback("budget-ratio-feedback","",false);updateBudgetSummary();
   });
   document.getElementById("budget-expense-category").addEventListener("change",function(){
     var category=BM.getCategory(this.value);expenseForm.elements.nature.value=category.nature;expenseForm.elements.priority.value=category.priority;
@@ -449,11 +447,11 @@ function setupBudgetEvents(){
     var period=getBudgetPeriod();
     if(period.expenses.length>=1000){budgetFeedback("budget-expense-feedback","La limite de 1 000 dépenses notées pour ce mois est atteinte.",true);return}
     period.expenses.push({id:"budget-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9),label:label,amount:BM.toAmount(rawAmount),category:category.id,nature:expenseForm.elements.nature.value==="fixed"?"fixed":"variable",priority:expenseForm.elements.priority.value==="watch"?"watch":"useful",date:date});
-    save();expenseForm.reset();document.getElementById("budget-expense-date").value=budgetDateForMonth(activeBudgetMonth);budgetFeedback("budget-expense-feedback","Dépense ajoutée. Les totaux ont été recalculés.",false);renderBudget();
+    save();expenseForm.reset();document.getElementById("budget-expense-date").value=budgetDateForMonth(activeBudgetMonth);budgetFeedback("budget-expense-feedback","",false);renderBudget();
   });
   document.getElementById("budget-expenses").addEventListener("click",function(event){
     var button=event.target.closest("[data-budget-delete]");if(!button)return;
-    var id=button.getAttribute("data-budget-delete"),period=getBudgetPeriod();period.expenses=period.expenses.filter(function(item){return item.id!==id});save();budgetFeedback("budget-expense-feedback","Dépense supprimée.",false);renderBudget();
+    var id=button.getAttribute("data-budget-delete"),period=getBudgetPeriod();period.expenses=period.expenses.filter(function(item){return item.id!==id});save();budgetFeedback("budget-expense-feedback","",false);renderBudget();
   });
 }
 setupBudgetEvents();
@@ -464,7 +462,7 @@ document.addEventListener("submit",function(e){
   var h=f.dataset.time?f.querySelector("input[type=time]").value:"";
   var kk=f.dataset.k,st=S[f.dataset.s];
   if(f.dataset.time){var dv=f.querySelector("input[type=date]").value;if(dv){kk=dv;wk=Math.round((mondayD(parseISO(dv))-monday(0))/6048e5)}}
-  (st[kk]=st[kk]||[]).push({t:t,h:h,d:false});
+  (st[kk]=st[kk]||[]).push({id:newTaskId(),t:t,h:h,d:false,tz:currentTimeZone()});
   if(h)st[kk].sort(function(a,b){return (a.h||"99").localeCompare(b.h||"99")});
   save();render();
 });
@@ -473,7 +471,9 @@ document.addEventListener("click",function(e){
   S[el.dataset.s][el.dataset.k].splice(+el.dataset.i,1);save();render();
 });
 document.addEventListener("change",function(e){
-  var el=e.target;if(el.type!=="checkbox")return;
+  var el=e.target;
+  if(el.dataset&&el.dataset.taskTime!==undefined){var task=S.tasks[el.dataset.k]&&S.tasks[el.dataset.k][+el.dataset.i];if(task){if(!el.value){el.value=String(task.h||"");return}task.h=el.value;task.tz=currentTimeZone();save();render()}return}
+  if(el.type!=="checkbox")return;
   if(el.dataset.df){S.defi[el.dataset.df]=el.checked;save();render();return}
   if(el.dataset.p){S.plan[el.dataset.p]=el.checked;save();render();return}
   S[el.dataset.s][el.dataset.k][+el.dataset.i].d=el.checked;save();render();
@@ -483,14 +483,14 @@ function tab(n){
   n=Number(n);if(n<1||n>4)n=1;activePlannerTab=n;
   document.getElementById("week").hidden=n!==1;document.getElementById("wnav").hidden=n!==1;document.getElementById("goals").hidden=n!==2;document.getElementById("plan").hidden=n!==3;document.getElementById("tools").hidden=n!==4;document.getElementById("budget").hidden=true;
   document.querySelector(".tabs").hidden=false;document.querySelector(".bar").hidden=false;document.getElementById("budget-open").hidden=false;document.getElementById("wp").hidden=false;document.getElementById("book-title").textContent="Mon Book";
-  document.getElementById("who").textContent=(S.cfg.name||"Bienvenue")+(S.cfg.field?" · "+S.cfg.field:"");
+  document.getElementById("who").textContent=bookSubline();
   [1,2,3,4].forEach(function(i){document.getElementById("t"+i).setAttribute("aria-selected",n===i)});
 }
 function openBudgetPage(){
   document.getElementById("wpp").hidden=true;document.querySelector(".tabs").hidden=true;document.querySelector(".bar").hidden=true;document.getElementById("wnav").hidden=true;
   ["week","goals","plan","tools"].forEach(function(id){document.getElementById(id).hidden=true});
   document.getElementById("budget").hidden=false;document.getElementById("budget-open").hidden=true;document.getElementById("wp").hidden=true;
-  document.getElementById("book-title").textContent="Mon budget";document.getElementById("who").textContent=(S.cfg.name||"Votre espace")+" · Suivi budgétaire";
+  document.getElementById("book-title").textContent="Budget";document.getElementById("who").textContent=bookSubline();
   renderBudget();window.scrollTo(0,0);
 }
 document.getElementById("budget-open").onclick=openBudgetPage;
@@ -503,8 +503,8 @@ S.notes=S.notes||[];S.notes.forEach(function(n,i){if(!n.id)n.id=Date.now()+i});
 var fresh=0,curC="",rng=null,ed=document.getElementById("ed");
 function clean(h){var t=document.createElement("template");t.innerHTML=h;t.content.querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,textarea,select").forEach(function(x){x.remove()});t.content.querySelectorAll("*").forEach(function(x){[].slice.call(x.attributes).forEach(function(a){if(/^on/i.test(a.name)||/^(href|src)$/i.test(a.name))x.removeAttribute(a.name)})});var d=document.createElement("div");d.appendChild(t.content);return d.innerHTML}
 function ex(c,v){ed.focus();if(rng){var s=getSelection();s.removeAllRanges();s.addRange(rng)}document.execCommand("styleWithCSS",false,true);document.execCommand(c,false,v||null)}
-function renderTools(){document.getElementById("who").textContent=(S.cfg.name||"Bienvenue")+(S.cfg.field?" · "+S.cfg.field:"");
-  document.getElementById("tl").innerHTML=S.notes.length?S.notes.map(function(n,i){return '<section class="nt d'+(n.id&&n.id===fresh?' new':'')+'"'+(n.c?' style="background:'+n.c+';color:#14202b;border-color:transparent"':'')+'><h2>'+esc(n.ti)+'</h2><div style="margin:0 0 8px;overflow-wrap:anywhere'+(n.h?'':';white-space:pre-wrap')+'">'+(n.h?clean(n.h):esc(n.tx||""))+'</div><p class="empty">'+n.d+(n.e?' · modifiée le '+n.e:'')+'</p><div class="row"><button data-ne="'+i+'" aria-label="Modifier" title="Modifier">✏️</button><button data-nr="'+i+'" aria-label="Réutiliser" title="Réutiliser comme modèle">📋</button><button data-nd="'+i+'" aria-label="Supprimer" title="Supprimer">🗑️</button><button data-pdf="'+i+'" title="Exporter cette note">Télécharger en PDF</button></div></section>'}).join(''):'<p class="empty">Aucune note pour l’instant.</p>';
+function renderTools(){document.getElementById("who").textContent=bookSubline();
+  document.getElementById("tl").innerHTML=S.notes.length?S.notes.map(function(n,i){return '<section class="nt d'+(n.id&&n.id===fresh?' new':'')+'"'+(n.c?' style="background:'+n.c+';color:#14202b;border-color:transparent"':'')+'><h2>'+esc(n.ti)+'</h2><div style="margin:0 0 8px;overflow-wrap:anywhere'+(n.h?'':';white-space:pre-wrap')+'">'+(n.h?clean(n.h):esc(n.tx||""))+'</div><p class="empty">'+n.d+(n.e?' · modifiée le '+n.e:'')+'</p><div class="row"><button data-ne="'+i+'" aria-label="Modifier" title="Modifier">✏️</button><button data-nr="'+i+'" aria-label="Réutiliser" title="Réutiliser comme modèle">📋</button><button data-nd="'+i+'" aria-label="Supprimer" title="Supprimer">🗑️</button><button data-pdf="'+i+'" title="Exporter cette note">Télécharger en PDF</button></div></section>'}).join(''):'';
 }
 document.addEventListener("click",function(e){
   var btn=e.target.closest("button[data-pdf]");if(!btn)return;
@@ -547,16 +547,16 @@ var WG=["linear-gradient(135deg,#0e7c86,#14202b)","linear-gradient(135deg,#f0c04
 function applyWp(){var b=document.body,w=S.wp,st=b.style;b.classList.remove("anim");st.background="";st.backgroundAttachment="";
   if(w.i){st.background="url("+w.i+") center/cover no-repeat";st.backgroundAttachment="fixed"}
   else if(w.g){st.background=w.g;st.backgroundAttachment="fixed";if(w.a)b.classList.add("anim")}}
-function ps(t){document.getElementById("wps").textContent=t}
+function ps(t){var node=document.getElementById("wps");node.textContent=t||"";node.hidden=!t}
 var wan=document.getElementById("wan");wan.checked=!!S.wp.a;
 document.getElementById("wpg").innerHTML=WG.map(function(g,i){return '<button type="button" data-w="'+i+'" style="background:'+g+'" aria-label="Fond '+(i+1)+'"></button>'}).join('');
 document.getElementById("wp").onclick=function(){var p=document.getElementById("wpp");p.hidden=!p.hidden};
 document.getElementById("wpg").addEventListener("click",function(e){var el=e.target;if(el.dataset.w===undefined)return;S.wp={g:WG[+el.dataset.w],a:wan.checked};save();applyWp();ps("")});
 document.getElementById("wpa").onclick=function(){S.wp={g:"linear-gradient(135deg,"+document.getElementById("w1").value+","+document.getElementById("w2").value+")",a:wan.checked};save();applyWp();ps("")};
-wan.onchange=function(){if(S.wp.g){S.wp.a=wan.checked;save();applyWp()}else ps("Choisissez d’abord un dégradé.")};
-document.getElementById("wpr").onclick=function(){S.wp={};wan.checked=false;save();applyWp();ps("Fond d’origine rétabli.")};
+wan.onchange=function(){if(S.wp.g){S.wp.a=wan.checked;save();applyWp()}else ps("")};
+document.getElementById("wpr").onclick=function(){S.wp={};wan.checked=false;save();applyWp();ps("")};
 document.getElementById("wpi").onclick=function(){document.getElementById("wpf").click()};
-document.getElementById("wpf").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);var old=S.wp;S.wp={i:c.toDataURL("image/jpeg",.78)};try{save();applyWp();ps("Fond appliqué. La synchronisation est en cours.")}catch(x){S.wp=old;ps("Cette photo ne peut pas être enregistrée. Essayez-en une autre.")}};im.onerror=function(){ps("Fichier illisible.")};im.src=r.result};r.readAsDataURL(f)};
+document.getElementById("wpf").onchange=function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var k=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);var old=S.wp;S.wp={i:c.toDataURL("image/jpeg",.78)};try{save();applyWp();ps("")}catch(x){S.wp=old;ps("Cette photo ne peut pas être enregistrée. Essayez-en une autre.")}};im.onerror=function(){ps("Fichier illisible.")};im.src=r.result};r.readAsDataURL(f)};
 applyWp();
 document.getElementById("wb0").onclick=function(){wk--;render()};
 document.getElementById("wb1").onclick=function(){wk++;render()};
@@ -565,5 +565,5 @@ render();renderBudget();
 }
 </script>
 <script src="app-v3.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c2fc0fbd53b7a7',t:'MTc5NDk2MzA2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c2fc0fbd53b7a7',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
