@@ -19,7 +19,7 @@ h1{font-size:clamp(2.2rem,8vw,3.6rem);line-height:1;margin:8px 0 4px;font-weight
 .tabs{display:flex;gap:8px;margin-bottom:18px}
 .tabs button{flex:1;padding:12px;border:1px solid var(--line);background:var(--surf);color:var(--ink);font:inherit;font-weight:600;border-radius:10px;cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
-button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 18px}
 .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}
 .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
@@ -131,6 +131,40 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .hd #wp{position:absolute;right:14px;top:12px}
 @media(max-width:480px){.auth-shell{margin:3vh auto;padding:14px}.auth-shell .auth-card{padding:32px 24px}.auth-shell h2{font-size:1.4rem}.hd{padding-right:115px}.hd #wp{font-size:.82rem;padding:8px}}
 
+/* Module budget */
+.budget-controls,.budget-expense-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}
+.budget-controls label,.budget-expense-form label{display:block;color:var(--ink);font-size:.9rem;font-weight:600}
+.budget-controls input,.budget-controls select,.budget-expense-form input,.budget-expense-form select{display:block;width:100%;min-width:0;margin-top:5px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+.budget-ratios{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:8px;margin:12px 0}
+.budget-ratio{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg)}
+.budget-ratio label{flex:1;font-size:.88rem;font-weight:600}
+.budget-ratio input{width:72px;padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--surf);color:var(--ink);font:inherit;text-align:right}
+.budget-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin:12px 0}
+.budget-stat{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.budget-stat span{display:block;color:var(--mute);font-size:.83rem}
+.budget-stat strong{display:block;margin-top:3px;font-size:1.12rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.budget-stat strong.error{color:#c0392b}
+.budget-envelopes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.budget-envelope{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.budget-envelope h3{margin:0 0 7px;font-size:1rem}
+.budget-envelope p{margin:4px 0;font-size:.88rem}
+.budget-track{height:9px;margin:8px 0;background:var(--line);border-radius:8px;overflow:hidden}
+.budget-track span{display:block;height:100%;background:var(--acc);border-radius:8px}
+.budget-envelope.over .budget-track span{background:#c0392b}
+.budget-advice{margin:10px 0 0;padding:10px 12px;border-radius:9px;background:color-mix(in srgb,var(--acc) 10%,var(--surf));color:var(--ink)}
+.budget-advice p{margin:4px 0}
+.budget-feedback{min-height:1.4em;margin:8px 0;color:var(--mute);font-size:.9rem}
+.budget-feedback.error{color:#c0392b}
+.budget-privacy{padding:10px 12px;border-left:3px solid var(--acc);background:var(--bg);color:var(--mute);font-size:.88rem}
+.budget-expenses{display:grid;gap:8px;margin-top:10px}
+.budget-expense{display:flex;align-items:flex-start;gap:10px;padding:10px;border-bottom:1px solid var(--line)}
+.budget-expense-main{flex:1;min-width:0}
+.budget-expense-main strong{display:block;overflow-wrap:anywhere}
+.budget-expense-meta{display:block;color:var(--mute);font-size:.82rem;overflow-wrap:anywhere}
+.budget-expense-amount{white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums}
+.budget-expense button{border:0;background:none;color:#a33;font-size:1.1rem;cursor:pointer;padding:4px 8px}
+#t5{min-width:62px}
+@media(max-width:480px){.budget-controls,.budget-expense-form{grid-template-columns:1fr 1fr}.budget-expense-form label:first-child{grid-column:1/-1}.budget-stat strong{font-size:1rem}}
 </style>
 </head>
 <body>
@@ -188,6 +222,7 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <button role="tab" id="t2" aria-selected="false">Mes objectifs</button>
 <button role="tab" id="t3" aria-selected="false">Programme</button>
 <button role="tab" id="t4" aria-selected="false">Carnet</button>
+<button role="tab" id="t5" aria-selected="false">Budget</button>
 </div>
 <div class="bar" aria-hidden="true"><i id="prog"></i></div>
 <div id="wnav" class="wnav"><button id="wb0" aria-label="Semaine précédente">‹</button><span id="wl"></span><button id="wb1" aria-label="Semaine suivante">›</button><button id="wb2">Aujourd’hui</button></div>
@@ -195,9 +230,52 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <div id="goals" class="grid" hidden></div>
 <div id="plan" class="grid" hidden></div>
 <div id="tools" class="grid" hidden><section class="d" style="grid-column:1/-1"><h2>Carnet</h2><form data-t="note" style="flex-direction:column"><input type="text" name="ti" placeholder="Titre" required aria-label="Titre"><div class="tb" role="toolbar" aria-label="Mise en forme"><button type="button" data-cmd="bold" aria-label="Gras"><b>G</b></button><button type="button" data-cmd="italic" aria-label="Italique"><i>I</i></button><button type="button" data-cmd="underline" aria-label="Souligné"><u>S</u></button><select id="sz" aria-label="Taille"><option value="3">Taille</option><option value="2">Petit</option><option value="4">Moyen</option><option value="5">Grand</option><option value="6">Titre</option></select><label>Texte <input type="color" id="fc" value="#0e7c86"></label><label>Fond <input type="color" id="hc" value="#f0c04a"></label><button type="button" data-cmd="removeFormat">Effacer le style</button></div><div id="ed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="Écrivez ici…"></div><div class="sw"><span class="empty">Couleur de la note :</span><button type="button" data-c="" style="background:var(--surf)" class="on" aria-label="Couleur 0"></button><button type="button" data-c="#fde68a" style="background:#fde68a" class="" aria-label="Couleur 1"></button><button type="button" data-c="#bfe3d0" style="background:#bfe3d0" class="" aria-label="Couleur 2"></button><button type="button" data-c="#bcd7f5" style="background:#bcd7f5" class="" aria-label="Couleur 3"></button><button type="button" data-c="#f7c6d4" style="background:#f7c6d4" class="" aria-label="Couleur 4"></button><button type="button" data-c="#d9c8f3" style="background:#d9c8f3" class="" aria-label="Couleur 5"></button></div><div class="row"><button id="nb" class="on">Ajouter</button><button type="button" id="nc" hidden>Annuler</button></div></form></section><div id="tl" style="display:contents"></div></div>
+<div id="budget" class="grid" hidden>
+  <section class="d" style="grid-column:1/-1">
+    <h2>Mon budget du mois</h2>
+    <p class="empty">Choisissez votre situation et indiquez le montant réellement disponible. Mon Book calcule les enveloppes en FCFA selon le modèle choisi.</p>
+    <div class="budget-controls">
+      <label for="budget-month">Mois suivi<input id="budget-month" type="month"></label>
+      <label for="budget-profile">Votre situation<select id="budget-profile"></select></label>
+      <label for="budget-available">Montant disponible pour le mois (FCFA)<input id="budget-available" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="Ex. 100000"></label>
+      <label for="budget-saved">Épargne réellement mise de côté (FCFA)<input id="budget-saved" type="number" min="0" max="1000000000" step="1" inputmode="numeric" placeholder="Ex. 10000"></label>
+    </div>
+    <p id="budget-profile-note" class="empty"></p>
+    <h3>Répartition de départ — modifiable</h3>
+    <div id="budget-ratios" class="budget-ratios"></div>
+    <p id="budget-ratio-feedback" class="budget-feedback" role="status" aria-live="polite"></p>
+    <p class="budget-privacy">Les calculs reposent uniquement sur les montants saisis. N’entrez aucun numéro de compte ni code bancaire. La classe « fixe/variable » et le repère « utile/à surveiller » servent au suivi : aucune dépense ni aucun paiement ne sont déclenchés automatiquement.</p>
+    <p id="budget-status" class="budget-feedback" role="status" aria-live="polite"></p>
+  </section>
+  <section class="d" style="grid-column:1/-1">
+    <h2>Résumé et enveloppes</h2>
+    <div id="budget-summary" class="budget-stats"></div>
+    <div id="budget-envelopes" class="budget-envelopes"></div>
+    <div id="budget-analytics" class="budget-advice"></div>
+    <div id="budget-advice" class="budget-advice"></div>
+  </section>
+  <section class="d" style="grid-column:1/-1">
+    <h2>Noter une dépense</h2>
+    <form id="budget-expense-form" class="budget-expense-form">
+      <label for="budget-expense-label">Libellé<input id="budget-expense-label" name="label" type="text" maxlength="80" required placeholder="Ex. transport de la semaine"></label>
+      <label for="budget-expense-amount">Montant (FCFA)<input id="budget-expense-amount" name="amount" type="number" min="1" max="1000000000" step="1" inputmode="numeric" required></label>
+      <label for="budget-expense-date">Date<input id="budget-expense-date" name="date" type="date" required></label>
+      <label for="budget-expense-category">Catégorie<select id="budget-expense-category" name="category" required></select></label>
+      <label for="budget-expense-nature">Type<select id="budget-expense-nature" name="nature"><option value="fixed">Fixe</option><option value="variable" selected>Variable</option></select></label>
+      <label for="budget-expense-priority">Suivi<select id="budget-expense-priority" name="priority"><option value="useful">Utile / nécessaire</option><option value="watch" selected>À surveiller</option></select></label>
+      <button type="submit">Ajouter la dépense</button>
+    </form>
+    <p id="budget-expense-feedback" class="budget-feedback" role="status" aria-live="polite"></p>
+  </section>
+  <section class="d" style="grid-column:1/-1">
+    <h2>Dépenses notées pour ce mois</h2>
+    <div id="budget-expenses" class="budget-expenses"></div>
+  </section>
+</div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<script src="budget-model.js"></script>
 <script>
 function startBook(initialData, saveWorkspace) {
 var DAYS=[["lun","Lundi","18h – 21h"],["mar","Mardi","18h – 21h"],["mer","Mercredi","18h – 21h"],["jeu","Jeudi","18h – 21h"],["ven","Vendredi","18h – 21h"],["sam","Samedi","9h – 13h"]];
@@ -208,6 +286,26 @@ if(!S||typeof S!=="object"||Array.isArray(S))S={};
 if(!Array.isArray(S.notes))S.notes=[];if(!Array.isArray(S.sales))S.sales=[];
 ["tasks","goals"].forEach(function(k){Object.keys(S[k]).forEach(function(d){if(!Array.isArray(S[k][d]))S[k][d]=[]})});
 S.tasks=S.tasks||{};S.goals=S.goals||{};S.plan=S.plan||{};S.focus=S.focus||{};S.save=S.save||{g:0,t:0};S.sales=S.sales||[];S.defi=S.defi||{};S.cfg=S.cfg||{};S.cfg.name=S.cfg.name||"";S.cfg.field=S.cfg.field||"";S.cfg.cur=S.cfg.cur||"FCFA";S.cfg.cls=S.cfg.cls||{};S.cfg.defis=S.cfg.defis||"";
+var BM=window.MonBookBudgetModel;
+if(!S.budget||typeof S.budget!=="object"||Array.isArray(S.budget))S.budget={};
+if(!S.budget.periods||typeof S.budget.periods!=="object"||Array.isArray(S.budget.periods))S.budget.periods={};
+function validBudgetMonth(value){return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(value||""))}
+function localMonthKey(date){return date.getFullYear()+"-"+("0"+(date.getMonth()+1)).slice(-2)}
+function localDateKey(date){return localMonthKey(date)+"-"+("0"+date.getDate()).slice(-2)}
+var activeBudgetMonth=validBudgetMonth(S.budget.activeMonth)?S.budget.activeMonth:localMonthKey(new Date());
+S.budget.activeMonth=activeBudgetMonth;
+function getBudgetPeriod(key){
+  var periodKey=validBudgetMonth(key)?key:activeBudgetMonth;
+  var source=S.budget.periods[periodKey];
+  if(!source){
+    var defaultProfile=BM&&BM.PROFILES[S.budget.defaultProfile]?S.budget.defaultProfile:"base";
+    var defaultRatios=BM&&BM.isValidRatios(S.budget.defaultRatios)?BM.copyRatios(S.budget.defaultRatios):(BM?BM.copyRatios(BM.PROFILES[defaultProfile].ratios):{});
+    source={profile:defaultProfile,available:0,ratios:defaultRatios,saved:0,expenses:[]};
+  }
+  var period=BM?BM.normalizePeriod(source):((source&&typeof source==="object"&&!Array.isArray(source))?source:{profile:"base",available:0,ratios:{},saved:0,expenses:[]});
+  S.budget.periods[periodKey]=period;
+  return period;
+}
 function save(){saveWorkspace(S)}
 var wk=0,JD=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"],MO=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 function iso(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
@@ -245,6 +343,120 @@ function render(){
   document.getElementById("plan").innerHTML=ph;renderTools();
   document.getElementById("prog").style.width=(all?Math.round(done*100/all):0)+"%";
 }
+function budgetMoney(value){return Math.round(Number(value)||0).toLocaleString("fr-FR")+" FCFA"}
+function budgetDateForMonth(key){var today=localDateKey(new Date());return today.slice(0,7)===key?today:key+"-01"}
+function budgetFeedback(id,text,isError){var node=document.getElementById(id);if(!node)return;node.textContent=text||"";node.classList.toggle("error",!!isError)}
+function renderBudget(){
+  if(!BM){budgetFeedback("budget-status","Le module Budget n’a pas pu être chargé. Actualisez la page ou contactez le support.",true);return}
+  var period=getBudgetPeriod();
+  var profileSelect=document.getElementById("budget-profile");
+  if(!profileSelect.dataset.ready){
+    profileSelect.innerHTML=Object.keys(BM.PROFILES).map(function(id){return '<option value="'+esc(id)+'">'+esc(BM.PROFILES[id].label)+'</option>'}).join("");
+    profileSelect.dataset.ready="1";
+  }
+  profileSelect.value=period.profile;
+  document.getElementById("budget-month").value=activeBudgetMonth;
+  document.getElementById("budget-available").value=period.available||"";
+  document.getElementById("budget-saved").value=period.saved||"";
+  document.getElementById("budget-profile-note").textContent=BM.getProfile(period.profile).note+" Les pourcentages sont des repères modifiables, pas une règle obligatoire.";
+  document.getElementById("budget-ratios").innerHTML=BM.BUCKETS.map(function(bucket){return '<div class="budget-ratio"><label for="budget-ratio-'+bucket.id+'">'+esc(bucket.label)+'</label><input id="budget-ratio-'+bucket.id+'" type="number" min="0" max="100" step="1" inputmode="numeric" data-budget-ratio="'+bucket.id+'" value="'+period.ratios[bucket.id]+'" aria-label="Pourcentage pour '+esc(bucket.label)+'"></div>'}).join("");
+  budgetFeedback("budget-ratio-feedback","Répartition : 100 %. Les montants cibles se recalculent automatiquement.",false);
+  var categorySelect=document.getElementById("budget-expense-category");
+  if(!categorySelect.dataset.ready){
+    categorySelect.innerHTML='<option value="">Choisir une catégorie</option>'+BM.CATEGORIES.map(function(category){return '<option value="'+esc(category.id)+'">'+esc(category.label)+'</option>'}).join("");
+    categorySelect.dataset.ready="1";
+  }
+  var dateInput=document.getElementById("budget-expense-date");
+  if(!dateInput.value||dateInput.value.slice(0,7)!==activeBudgetMonth)dateInput.value=budgetDateForMonth(activeBudgetMonth);
+  updateBudgetSummary();
+  renderBudgetExpenses();
+}
+function updateBudgetSummary(){
+  if(!BM)return;
+  var result=BM.calculate(getBudgetPeriod());
+  var period=result.period,available=period.available;
+  var summary=document.getElementById("budget-summary");
+  summary.innerHTML='<div class="budget-stat"><span>Disponible ce mois</span><strong>'+budgetMoney(available)+'</strong></div><div class="budget-stat"><span>Dépenses notées</span><strong>'+budgetMoney(result.totalExpenses)+'</strong></div><div class="budget-stat"><span>Épargne mise de côté</span><strong>'+budgetMoney(result.saved)+'</strong></div><div class="budget-stat"><span>Reste après dépenses et épargne</span><strong class="'+(result.remainingOverall<0?'error':'')+'">'+budgetMoney(result.remainingOverall)+'</strong></div>';
+  document.getElementById("budget-envelopes").innerHTML=BM.BUCKETS.map(function(bucket){
+    var target=result.targets[bucket.id],actual=result.actualByBucket[bucket.id],remaining=result.remainingByBucket[bucket.id];
+    var ratio=result.ratios[bucket.id],over=remaining<0;
+    var width=target>0?Math.min(100,Math.round(actual*100/target)):(actual>0?100:0);
+    var actualWord=bucket.id==="savings"?"Mis de côté":"Dépensé";
+    var actualRatio=available>0?(actual*100/available).toLocaleString("fr-FR",{maximumFractionDigits:1})+" % du disponible":"—";
+    var balance=remaining>=0?"Reste dans l’enveloppe : "+budgetMoney(remaining):"Dépassement : "+budgetMoney(Math.abs(remaining));
+    return '<article class="budget-envelope'+(over?' over':'')+'"><h3>'+esc(bucket.label)+'</h3><p>Repère · '+ratio+' % · <strong>'+budgetMoney(target)+'</strong></p><div class="budget-track" role="progressbar" aria-label="'+esc(bucket.label)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+width+'"><span style="width:'+width+'%"></span></div><p>'+actualWord+' : <strong>'+budgetMoney(actual)+'</strong> · '+actualRatio+'</p><p>'+balance+'</p></article>';
+  }).join("");
+  var categoryRows=BM.CATEGORIES.map(function(category){return{category:category,amount:result.spentByCategory[category.id]||0}}).filter(function(row){return row.amount>0}).sort(function(a,b){return b.amount-a.amount});
+  var categoryHtml=categoryRows.length?categoryRows.map(function(row){var share=available>0?(row.amount*100/available).toLocaleString("fr-FR",{maximumFractionDigits:1})+" % du disponible":"—";return '<p>'+esc(row.category.label)+' : '+budgetMoney(row.amount)+' · '+share+'</p>'}).join(""):'<p>Aucune dépense notée par catégorie pour le moment.</p>';
+  document.getElementById("budget-analytics").innerHTML='<strong>Nature des charges et ratios par poste</strong><p>Fixes : '+budgetMoney(result.totals.fixed)+' · Variables : '+budgetMoney(result.totals.variable)+'</p><p>Marquées utiles : '+budgetMoney(result.totals.useful)+' · À surveiller : '+budgetMoney(result.totals.watch)+'</p>'+categoryHtml;
+  var tips=[];
+  if(available<=0)tips.push("Saisissez votre salaire net, votre argent de poche ou le montant réellement disponible pour calculer les enveloppes.");
+  if(available>0&&result.totalExpenses===0)tips.push("Ajoutez vos dépenses au fur et à mesure pour voir les calculs se mettre à jour.");
+  if(result.remainingOverall<0)tips.push("Les dépenses et l’épargne saisies dépassent le montant disponible de "+budgetMoney(Math.abs(result.remainingOverall))+". Vérifiez les montants ou ajustez votre répartition.");
+  BM.BUCKETS.forEach(function(bucket){var diff=result.remainingByBucket[bucket.id];if(diff<0)tips.push("L’enveloppe « "+bucket.label+" » dépasse son repère de "+budgetMoney(Math.abs(diff))+".")});
+  if(available>0&&period.ratios.savings>0&&result.remainingByBucket.savings>0)tips.push("Pour atteindre le repère d’épargne choisi, il reste "+budgetMoney(result.remainingByBucket.savings)+" à mettre de côté — uniquement si cela correspond à votre situation.");
+  if(available>0&&result.totalExpenses>0&&result.remainingOverall>=0&&!BM.BUCKETS.some(function(bucket){return result.remainingByBucket[bucket.id]<0}))tips.push("Les montants notés restent dans les enveloppes choisies pour l’instant. Ces repères sont modifiables et ne constituent pas un conseil financier personnalisé.");
+  document.getElementById("budget-advice").innerHTML=tips.map(function(tip){return '<p>'+esc(tip)+'</p>'}).join("");
+}
+function renderBudgetExpenses(){
+  if(!BM)return;
+  var period=getBudgetPeriod(),listNode=document.getElementById("budget-expenses");
+  var items=period.expenses.slice().sort(function(a,b){return (b.date||"").localeCompare(a.date||"")||String(b.id).localeCompare(String(a.id))});
+  if(!items.length){listNode.innerHTML='<p class="empty">Aucune dépense notée pour ce mois.</p>';return}
+  listNode.innerHTML=items.map(function(item){
+    var category=BM.getCategory(item.category),bucket=BM.BUCKETS.filter(function(value){return value.id===category.bucket})[0];
+    var date=item.date?new Date(item.date+"T00:00:00").toLocaleDateString("fr-FR",{timeZone:"Africa/Abidjan",day:"numeric",month:"short"}):"Date non précisée";
+    var nature=item.nature==="fixed"?"Fixe":"Variable",priority=item.priority==="watch"?"À surveiller":"Utile / nécessaire";
+    return '<div class="budget-expense"><div class="budget-expense-main"><strong>'+esc(item.label)+'</strong><span class="budget-expense-meta">'+esc(date)+' · '+esc(category.label)+' · '+esc(bucket?bucket.label:"Budget")+' · '+nature+' · '+priority+'</span></div><span class="budget-expense-amount">'+budgetMoney(item.amount)+'</span><button type="button" data-budget-delete="'+esc(item.id)+'" aria-label="Supprimer '+esc(item.label)+'">×</button></div>';
+  }).join("");
+}
+function setupBudgetEvents(){
+  if(!BM)return;
+  var profileSelect=document.getElementById("budget-profile"),monthInput=document.getElementById("budget-month"),availableInput=document.getElementById("budget-available"),savedInput=document.getElementById("budget-saved"),ratioBox=document.getElementById("budget-ratios"),expenseForm=document.getElementById("budget-expense-form");
+  profileSelect.addEventListener("change",function(){
+    var selected=BM.PROFILES[this.value]?this.value:"base",period=getBudgetPeriod();
+    period.profile=selected;period.ratios=BM.copyRatios(BM.PROFILES[selected].ratios);S.budget.defaultProfile=selected;S.budget.defaultRatios=BM.copyRatios(period.ratios);save();renderBudget();
+  });
+  monthInput.addEventListener("change",function(){
+    if(!validBudgetMonth(this.value)){budgetFeedback("budget-status","Choisissez un mois valide.",true);this.value=activeBudgetMonth;return}
+    activeBudgetMonth=this.value;S.budget.activeMonth=activeBudgetMonth;getBudgetPeriod();save();renderBudget();budgetFeedback("budget-status","Mois sélectionné. Les données des autres mois restent conservées.",false);
+  });
+  availableInput.addEventListener("input",function(){
+    if(this.value!==""&&(!/^\d+$/.test(this.value)||Number(this.value)>BM.MAX_AMOUNT)){budgetFeedback("budget-status","Saisissez un montant entier positif en FCFA.",true);return}
+    getBudgetPeriod().available=BM.toAmount(this.value);save();budgetFeedback("budget-status","Montant enregistré ; les enveloppes sont recalculées automatiquement.",false);updateBudgetSummary();
+  });
+  savedInput.addEventListener("input",function(){
+    if(this.value!==""&&(!/^\d+$/.test(this.value)||Number(this.value)>BM.MAX_AMOUNT)){budgetFeedback("budget-status","Saisissez un montant entier positif en FCFA.",true);return}
+    getBudgetPeriod().saved=BM.toAmount(this.value);save();budgetFeedback("budget-status","Épargne mise à jour.",false);updateBudgetSummary();
+  });
+  ratioBox.addEventListener("input",function(event){
+    var input=event.target.closest("[data-budget-ratio]");if(!input)return;
+    var ratios={},valid=true,total=0;
+    BM.BUCKETS.forEach(function(bucket){var node=ratioBox.querySelector('[data-budget-ratio="'+bucket.id+'"]');if(!node||node.value===""||!/^\d+$/.test(node.value)){valid=false;return}var number=Number(node.value);if(number<0||number>100){valid=false;return}ratios[bucket.id]=number;total+=number});
+    if(!valid||total!==100){budgetFeedback("budget-ratio-feedback","Les pourcentages doivent être des nombres entiers et totaliser exactement 100 %.",true);return}
+    var updatedPeriod=getBudgetPeriod();updatedPeriod.ratios=ratios;S.budget.defaultProfile=updatedPeriod.profile;S.budget.defaultRatios=BM.copyRatios(ratios);save();budgetFeedback("budget-ratio-feedback","Répartition enregistrée : 100 %. Les montants cibles sont recalculés.",false);updateBudgetSummary();
+  });
+  document.getElementById("budget-expense-category").addEventListener("change",function(){
+    var category=BM.getCategory(this.value);expenseForm.elements.nature.value=category.nature;expenseForm.elements.priority.value=category.priority;
+  });
+  expenseForm.addEventListener("submit",function(event){
+    event.preventDefault();
+    var label=expenseForm.elements.label.value.trim(),rawAmount=expenseForm.elements.amount.value,date=expenseForm.elements.date.value,category=BM.getCategory(expenseForm.elements.category.value);
+    if(!label||label.length>80||!rawAmount||!/^\d+$/.test(rawAmount)||Number(rawAmount)<1||Number(rawAmount)>BM.MAX_AMOUNT){budgetFeedback("budget-expense-feedback","Vérifiez le libellé et saisissez un montant entier positif en FCFA.",true);return}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date.slice(0,7)!==activeBudgetMonth){budgetFeedback("budget-expense-feedback","La date de la dépense doit appartenir au mois sélectionné.",true);return}
+    if(!expenseForm.elements.category.value){budgetFeedback("budget-expense-feedback","Choisissez une catégorie.",true);return}
+    var period=getBudgetPeriod();
+    if(period.expenses.length>=1000){budgetFeedback("budget-expense-feedback","La limite de 1 000 dépenses notées pour ce mois est atteinte.",true);return}
+    period.expenses.push({id:"budget-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9),label:label,amount:BM.toAmount(rawAmount),category:category.id,nature:expenseForm.elements.nature.value==="fixed"?"fixed":"variable",priority:expenseForm.elements.priority.value==="watch"?"watch":"useful",date:date});
+    save();expenseForm.reset();document.getElementById("budget-expense-date").value=budgetDateForMonth(activeBudgetMonth);budgetFeedback("budget-expense-feedback","Dépense ajoutée. Les totaux ont été recalculés.",false);renderBudget();
+  });
+  document.getElementById("budget-expenses").addEventListener("click",function(event){
+    var button=event.target.closest("[data-budget-delete]");if(!button)return;
+    var id=button.getAttribute("data-budget-delete"),period=getBudgetPeriod();period.expenses=period.expenses.filter(function(item){return item.id!==id});save();budgetFeedback("budget-expense-feedback","Dépense supprimée.",false);renderBudget();
+  });
+}
+setupBudgetEvents();
+
 document.addEventListener("submit",function(e){
   var f=e.target;if(!f.dataset.s)return;e.preventDefault();
   var t=f.querySelector("input[type=text]").value.trim();if(!t)return;
@@ -266,13 +478,14 @@ document.addEventListener("change",function(e){
   S[el.dataset.s][el.dataset.k][+el.dataset.i].d=el.checked;save();render();
 });
 function tab(n){
-  document.getElementById("week").hidden=n!==1;document.getElementById("wnav").hidden=n!==1;document.getElementById("goals").hidden=n!==2;document.getElementById("plan").hidden=n!==3;document.getElementById("tools").hidden=n!==4;document.getElementById("t4").setAttribute("aria-selected",n===4);document.getElementById("t3").setAttribute("aria-selected",n===3);
-  document.getElementById("t1").setAttribute("aria-selected",n===1);document.getElementById("t2").setAttribute("aria-selected",n===2);
+  document.getElementById("week").hidden=n!==1;document.getElementById("wnav").hidden=n!==1;document.getElementById("goals").hidden=n!==2;document.getElementById("plan").hidden=n!==3;document.getElementById("tools").hidden=n!==4;document.getElementById("budget").hidden=n!==5;document.querySelector(".bar").hidden=n===5;
+  [1,2,3,4,5].forEach(function(i){document.getElementById("t"+i).setAttribute("aria-selected",n===i)});
 }
 document.getElementById("t1").onclick=function(){tab(1)};
 document.getElementById("t2").onclick=function(){tab(2)};
 document.getElementById("t3").onclick=function(){tab(3)};
 document.getElementById("t4").onclick=function(){tab(4)};
+document.getElementById("t5").onclick=function(){tab(5)};
 S.notes=S.notes||[];S.notes.forEach(function(n,i){if(!n.id)n.id=Date.now()+i});
 var fresh=0,curC="",rng=null,ed=document.getElementById("ed");
 function clean(h){var t=document.createElement("template");t.innerHTML=h;t.content.querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,textarea,select").forEach(function(x){x.remove()});t.content.querySelectorAll("*").forEach(function(x){[].slice.call(x.attributes).forEach(function(a){if(/^on/i.test(a.name)||/^(href|src)$/i.test(a.name))x.removeAttribute(a.name)})});var d=document.createElement("div");d.appendChild(t.content);return d.innerHTML}
@@ -335,9 +548,9 @@ applyWp();
 document.getElementById("wb0").onclick=function(){wk--;render()};
 document.getElementById("wb1").onclick=function(){wk++;render()};
 document.getElementById("wb2").onclick=function(){wk=0;render()};
-render();
+render();renderBudget();
 }
 </script>
 <script src="app-v3.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c19247b9db97ab',t:'MTc5NDk0ODI0NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c19247b9db97ab',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c2df093eb0b79f',t:'MTc5NDk2MTg3NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c2df093eb0b79f',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
