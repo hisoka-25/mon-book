@@ -127,9 +127,12 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .auth-shell .message.error{color:#b3261e}
 .auth-shell .test-pill{display:block;width:max-content;max-width:100%;margin:0 auto 24px;padding:7px 14px;border:1px solid #9bd3d6;border-radius:999px;background:#e5f6f6;color:#0c6c74;font-size:.84rem;font-weight:700;text-align:center}
 .auth-shell .price{text-align:center;margin:0 0 16px;font-size:1.2rem;font-weight:700;color:#142033}
-.hd{position:relative;padding-right:145px}
-.hd #wp{position:absolute;right:14px;top:12px}
-@media(max-width:480px){.auth-shell{margin:3vh auto;padding:14px}.auth-shell .auth-card{padding:32px 24px}.auth-shell h2{font-size:1.4rem}.hd{padding-right:115px}.hd #wp{font-size:.82rem;padding:8px}}
+.hd{position:relative;padding-right:235px}
+.hd-actions{position:absolute;right:14px;top:12px;display:flex;align-items:center;gap:6px}
+.hd-actions .wpb{padding:8px 10px;font-size:.82rem;white-space:nowrap}
+.budget-page-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.budget-page-head h2{margin:0}
+@media(max-width:480px){.auth-shell{margin:3vh auto;padding:14px}.auth-shell .auth-card{padding:32px 24px}.auth-shell h2{font-size:1.4rem}.hd{padding-right:0;padding-top:56px}.hd-actions{right:10px;top:8px}.hd-actions .wpb{font-size:.8rem;padding:7px 9px}}
 
 /* Module budget */
 .budget-controls,.budget-expense-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:12px 0}
@@ -163,7 +166,6 @@ form[data-time] input[type=text]{flex:1 1 55%}
 .budget-expense-meta{display:block;color:var(--mute);font-size:.82rem;overflow-wrap:anywhere}
 .budget-expense-amount{white-space:nowrap;font-weight:700;font-variant-numeric:tabular-nums}
 .budget-expense button{border:0;background:none;color:#a33;font-size:1.1rem;cursor:pointer;padding:4px 8px}
-#t5{min-width:62px}
 @media(max-width:480px){.budget-controls,.budget-expense-form{grid-template-columns:1fr 1fr}.budget-expense-form label:first-child{grid-column:1/-1}.budget-stat strong{font-size:1rem}}
 </style>
 </head>
@@ -215,14 +217,13 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <main id="book-app" hidden>
 <div class="account-bar"><span id="account-email-label"></span><div class="right"><span id="sync-status" role="status" aria-live="polite"></span><button type="button" id="retry-save" hidden>Réessayer</button><button type="button" id="logout-button">Déconnexion</button></div></div>
 <div id="err" hidden></div>
-<div class="hd"><h1>Mon Book</h1><p class="sub" id="who"></p><button id="wp" class="wpb" aria-label="Personnaliser le fond d’écran">⚙️ Paramètres</button></div>
+<div class="hd"><h1 id="book-title">Mon Book</h1><p class="sub" id="who"></p><div class="hd-actions"><button type="button" id="budget-open" class="wpb" aria-label="Ouvrir la page Budget">💰 Budget</button><button id="wp" class="wpb" aria-label="Personnaliser le fond d’écran">⚙️ Paramètres</button></div></div>
 <section id="wpp" class="d" hidden><h2>Personnaliser le fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps"></p></section>
 <div class="tabs" role="tablist">
 <button role="tab" id="t1" aria-selected="true">Ma semaine</button>
 <button role="tab" id="t2" aria-selected="false">Mes objectifs</button>
 <button role="tab" id="t3" aria-selected="false">Programme</button>
 <button role="tab" id="t4" aria-selected="false">Carnet</button>
-<button role="tab" id="t5" aria-selected="false">Budget</button>
 </div>
 <div class="bar" aria-hidden="true"><i id="prog"></i></div>
 <div id="wnav" class="wnav"><button id="wb0" aria-label="Semaine précédente">‹</button><span id="wl"></span><button id="wb1" aria-label="Semaine suivante">›</button><button id="wb2">Aujourd’hui</button></div>
@@ -232,7 +233,7 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <div id="tools" class="grid" hidden><section class="d" style="grid-column:1/-1"><h2>Carnet</h2><form data-t="note" style="flex-direction:column"><input type="text" name="ti" placeholder="Titre" required aria-label="Titre"><div class="tb" role="toolbar" aria-label="Mise en forme"><button type="button" data-cmd="bold" aria-label="Gras"><b>G</b></button><button type="button" data-cmd="italic" aria-label="Italique"><i>I</i></button><button type="button" data-cmd="underline" aria-label="Souligné"><u>S</u></button><select id="sz" aria-label="Taille"><option value="3">Taille</option><option value="2">Petit</option><option value="4">Moyen</option><option value="5">Grand</option><option value="6">Titre</option></select><label>Texte <input type="color" id="fc" value="#0e7c86"></label><label>Fond <input type="color" id="hc" value="#f0c04a"></label><button type="button" data-cmd="removeFormat">Effacer le style</button></div><div id="ed" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Note" data-ph="Écrivez ici…"></div><div class="sw"><span class="empty">Couleur de la note :</span><button type="button" data-c="" style="background:var(--surf)" class="on" aria-label="Couleur 0"></button><button type="button" data-c="#fde68a" style="background:#fde68a" class="" aria-label="Couleur 1"></button><button type="button" data-c="#bfe3d0" style="background:#bfe3d0" class="" aria-label="Couleur 2"></button><button type="button" data-c="#bcd7f5" style="background:#bcd7f5" class="" aria-label="Couleur 3"></button><button type="button" data-c="#f7c6d4" style="background:#f7c6d4" class="" aria-label="Couleur 4"></button><button type="button" data-c="#d9c8f3" style="background:#d9c8f3" class="" aria-label="Couleur 5"></button></div><div class="row"><button id="nb" class="on">Ajouter</button><button type="button" id="nc" hidden>Annuler</button></div></form></section><div id="tl" style="display:contents"></div></div>
 <div id="budget" class="grid" hidden>
   <section class="d" style="grid-column:1/-1">
-    <h2>Mon budget du mois</h2>
+    <div class="budget-page-head"><h2>Mon budget du mois</h2><button type="button" id="budget-back" class="wpb">← Retour au carnet</button></div>
     <p class="empty">Choisissez votre situation et indiquez le montant réellement disponible. Mon Book calcule les enveloppes en FCFA selon le modèle choisi.</p>
     <div class="budget-controls">
       <label for="budget-month">Mois suivi<input id="budget-month" type="month"></label>
@@ -477,15 +478,27 @@ document.addEventListener("change",function(e){
   if(el.dataset.p){S.plan[el.dataset.p]=el.checked;save();render();return}
   S[el.dataset.s][el.dataset.k][+el.dataset.i].d=el.checked;save();render();
 });
+var activePlannerTab=1;
 function tab(n){
-  document.getElementById("week").hidden=n!==1;document.getElementById("wnav").hidden=n!==1;document.getElementById("goals").hidden=n!==2;document.getElementById("plan").hidden=n!==3;document.getElementById("tools").hidden=n!==4;document.getElementById("budget").hidden=n!==5;document.querySelector(".bar").hidden=n===5;
-  [1,2,3,4,5].forEach(function(i){document.getElementById("t"+i).setAttribute("aria-selected",n===i)});
+  n=Number(n);if(n<1||n>4)n=1;activePlannerTab=n;
+  document.getElementById("week").hidden=n!==1;document.getElementById("wnav").hidden=n!==1;document.getElementById("goals").hidden=n!==2;document.getElementById("plan").hidden=n!==3;document.getElementById("tools").hidden=n!==4;document.getElementById("budget").hidden=true;
+  document.querySelector(".tabs").hidden=false;document.querySelector(".bar").hidden=false;document.getElementById("budget-open").hidden=false;document.getElementById("wp").hidden=false;document.getElementById("book-title").textContent="Mon Book";
+  document.getElementById("who").textContent=(S.cfg.name||"Bienvenue")+(S.cfg.field?" · "+S.cfg.field:"");
+  [1,2,3,4].forEach(function(i){document.getElementById("t"+i).setAttribute("aria-selected",n===i)});
 }
+function openBudgetPage(){
+  document.getElementById("wpp").hidden=true;document.querySelector(".tabs").hidden=true;document.querySelector(".bar").hidden=true;document.getElementById("wnav").hidden=true;
+  ["week","goals","plan","tools"].forEach(function(id){document.getElementById(id).hidden=true});
+  document.getElementById("budget").hidden=false;document.getElementById("budget-open").hidden=true;document.getElementById("wp").hidden=true;
+  document.getElementById("book-title").textContent="Mon budget";document.getElementById("who").textContent=(S.cfg.name||"Votre espace")+" · Suivi budgétaire";
+  renderBudget();window.scrollTo(0,0);
+}
+document.getElementById("budget-open").onclick=openBudgetPage;
+document.getElementById("budget-back").onclick=function(){tab(activePlannerTab);window.scrollTo(0,0)};
 document.getElementById("t1").onclick=function(){tab(1)};
 document.getElementById("t2").onclick=function(){tab(2)};
 document.getElementById("t3").onclick=function(){tab(3)};
 document.getElementById("t4").onclick=function(){tab(4)};
-document.getElementById("t5").onclick=function(){tab(5)};
 S.notes=S.notes||[];S.notes.forEach(function(n,i){if(!n.id)n.id=Date.now()+i});
 var fresh=0,curC="",rng=null,ed=document.getElementById("ed");
 function clean(h){var t=document.createElement("template");t.innerHTML=h;t.content.querySelectorAll("script,style,iframe,object,embed,link,meta,form,input,button,textarea,select").forEach(function(x){x.remove()});t.content.querySelectorAll("*").forEach(function(x){[].slice.call(x.attributes).forEach(function(a){if(/^on/i.test(a.name)||/^(href|src)$/i.test(a.name))x.removeAttribute(a.name)})});var d=document.createElement("div");d.appendChild(t.content);return d.innerHTML}
@@ -552,5 +565,5 @@ render();renderBudget();
 }
 </script>
 <script src="app-v3.js"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c2df093eb0b79f',t:'MTc5NDk2MTg3NQ=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c2df093eb0b79f',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5c2fc0fbd53b7a7',t:'MTc5NDk2MzA2NA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5c2fc0fbd53b7a7',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
