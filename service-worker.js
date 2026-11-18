@@ -1,8 +1,9 @@
-const CACHE_NAME = 'mon-book-shell-v1';
+const CACHE_NAME = 'mon-book-shell-v2-budget';
 const SHELL = [
   '/',
   '/index.html',
   '/app-v3.js',
+  '/budget-model.js',
   '/config.js',
   '/manifest.webmanifest',
   '/icon-192.png',
