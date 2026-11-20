@@ -31,8 +31,6 @@ ul{list-style:none;margin:0;padding:0}
 li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
 li:last-child{border-bottom:0}
 li input[type=checkbox]{width:20px;height:20px;accent-color:var(--acc);flex:none}
-li input[type=time]{width:108px;flex:none;padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit;font-size:.88rem}
-@media(max-width:420px){li input[type=time]{width:96px;font-size:.82rem}}
 li span{flex:1;overflow-wrap:anywhere}
 li.done span{text-decoration:line-through;color:var(--mute)}
 li time{color:var(--acc);font-weight:600;font-size:.85rem}
@@ -76,10 +74,6 @@ button:active{transform:scale(.96)}
 .row input[type=color]{width:38px;height:34px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer}
 #wpg button{width:38px;height:38px;border-radius:10px}
 #wpp{margin-bottom:14px;animation:fade .3s ease}
-.notification-settings{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
-.notification-settings h3{margin:0 0 4px;font-size:1rem}
-.notification-feedback{margin:0;color:var(--mute);font-size:.9rem}
-.notification-feedback.error{color:#c0392b}
 body.anim{background-size:300% 300%!important;animation:gs 14s ease infinite}
 @keyframes gs{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .nt .row button{padding:6px 11px}
@@ -215,7 +209,7 @@ form[data-time] input[type=text]{flex:1 1 55%}
 <div class="account-bar"><span id="account-email-label"></span><div class="right"><span id="sync-status" role="status" aria-live="polite" hidden></span><button type="button" id="retry-save" hidden>Réessayer</button><button type="button" id="logout-button">Déconnexion</button></div></div>
 <div id="err" hidden></div>
 <div class="hd"><h1 id="book-title">Mon Book</h1><p class="sub" id="who"></p><div class="hd-actions"><button type="button" id="budget-open" class="wpb" aria-label="Ouvrir la page Budget">💰 Budget</button><button id="wp" class="wpb" aria-label="Personnaliser le fond d’écran">⚙️ Paramètres</button></div></div>
-<section id="wpp" class="d" hidden><h2>Personnaliser le fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps" hidden></p><div class="notification-settings" id="notification-settings"><h3>Rappels</h3><div class="row"><button type="button" id="notification-toggle" aria-pressed="false">Activer les notifications</button></div><p id="notification-status" class="notification-feedback" role="status" aria-live="polite" hidden></p></div></section>
+<section id="wpp" class="d" hidden><h2>Personnaliser le fond d’écran</h2><div class="sw" id="wpg"></div><div class="row"><label class="lb">Couleur 1 <input type="color" id="w1" value="#0e7c86"></label><label class="lb">Couleur 2 <input type="color" id="w2" value="#14202b"></label><button id="wpa">Appliquer</button></div><div class="row"><button id="wpi">Ma photo…</button><input type="file" id="wpf" accept="image/*" hidden><label class="lb"><input type="checkbox" id="wan"> Animer le dégradé</label><button id="wpr">Réinitialiser</button></div><p class="empty" id="wps" hidden></p></section>
 <div class="tabs" role="tablist">
 <button role="tab" id="t1" aria-selected="true">Ma semaine</button>
 <button role="tab" id="t2" aria-selected="false">Mes objectifs</button>
@@ -319,7 +313,7 @@ function esc(s){return s.replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&
 function bookSubline(){return [S.cfg.name,S.cfg.field].filter(Boolean).join(" · ")}
 function list(arr,store,key){
   if(!arr.length)return '';
-  return '<ul>'+arr.map(function(x,i){var timeControl=store==="tasks"?'<input type="time" data-task-time data-k="'+key+'" data-i="'+i+'" value="'+esc(String(x.h||""))+'" required aria-label="Heure de '+esc(String(x.t||"tâche"))+'">':'';return '<li class="'+(x.d?'done':'')+'"><input type="checkbox" data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" '+(x.d?'checked':'')+' aria-label="Terminé">'+timeControl+'<span>'+esc(String(x.t||""))+'</span><button data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" data-del="1" aria-label="Supprimer">×</button></li>'}).join('')+'</ul>';
+  return '<ul>'+arr.map(function(x,i){var timeLabel=store==="tasks"&&x.h?'<time>'+esc(String(x.h))+'</time> ':'';return '<li class="'+(x.d?'done':'')+'">' + '<input type="checkbox" data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" '+(x.d?'checked':'')+' aria-label="Terminé"><span>'+timeLabel+esc(String(x.t||""))+'</span><button data-s="'+store+'" data-k="'+key+'" data-i="'+i+'" data-del="1" aria-label="Supprimer">×</button></li>'}).join('')+'</ul>';
 }
 function render(){
   var all=0,done=0;
@@ -472,7 +466,6 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("change",function(e){
   var el=e.target;
-  if(el.dataset&&el.dataset.taskTime!==undefined){var task=S.tasks[el.dataset.k]&&S.tasks[el.dataset.k][+el.dataset.i];if(task){if(!el.value){el.value=String(task.h||"");return}task.h=el.value;task.tz=currentTimeZone();save();render()}return}
   if(el.type!=="checkbox")return;
   if(el.dataset.df){S.defi[el.dataset.df]=el.checked;save();render();return}
   if(el.dataset.p){S.plan[el.dataset.p]=el.checked;save();render();return}
@@ -565,5 +558,5 @@ render();renderBudget();
 }
 </script>
 <script src="app-v3.js"></script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5d8c5385f891245',t:'MTc5NTE5MTUwNA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5d8c5385f891245',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
