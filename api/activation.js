@@ -103,7 +103,7 @@ module.exports = async function (req, res) {
       SUPABASE_URL +
       '/rest/v1/mon_book_subscriptions?user_id=eq.' +
       user.id +
-      '&select=expires_at&limit=1',
+      '&select=expires_at,is_lifetime&limit=1',
       {
         headers: { apikey: secret },
         signal: AbortSignal.timeout(8000)
@@ -111,16 +111,18 @@ module.exports = async function (req, res) {
     );
 
     if (!subscriptionResponse.ok) {
-      return reply(503, 'Impossible de vérifier votre abonnement. Réessayez.');
+      return reply(503, 'Impossible de vérifier votre accès. Réessayez.');
     }
 
     const subscriptions = await subscriptionResponse.json();
-    const activeUntil = Array.isArray(subscriptions) && subscriptions.length === 1
-      ? Date.parse(subscriptions[0].expires_at || '')
-      : NaN;
+    const subscription = Array.isArray(subscriptions) && subscriptions.length === 1
+      ? subscriptions[0]
+      : null;
+    const lifetimeAccess = !!(subscription && subscription.is_lifetime === true);
+    const activeUntil = subscription ? Date.parse(subscription.expires_at || '') : NaN;
 
-    if (!Number.isFinite(activeUntil) || activeUntil <= Date.now()) {
-      return reply(402, 'Votre abonnement est expiré. Payez 1 100 FCFA pour le renouveler.');
+    if (!lifetimeAccess && (!Number.isFinite(activeUntil) || activeUntil <= Date.now())) {
+      return reply(402, 'Votre accès a expiré. Payez 1 100 FCFA une seule fois pour le réactiver à vie.');
     }
 
     const paymentResponse = await fetch(
