@@ -51,11 +51,13 @@
   function message(node, text, isError) {
     node.textContent = text || '';
     node.classList.toggle('error', !!isError);
+    node.hidden = !text;
   }
-  function status(text, isError) {
-    sync.textContent = text;
+  function status(text, isError, canRetry) {
+    sync.textContent = text || '';
+    sync.hidden = !text;
     sync.classList.toggle('error', !!isError);
-    retry.hidden = !isError;
+    retry.hidden = !(isError && canRetry !== false);
   }
   function lock(value) {
     busy = value;
@@ -63,13 +65,10 @@
   }
   function setMode(next) {
     mode = next;
-    $('auth-heading').textContent = mode === 'signup' ? 'Bienvenue dans votre espace' : 'Ravi de vous retrouver';
-    $('auth-description').textContent = mode === 'signup' ? 'Créez votre compte pour organiser vos idées.' : 'Connectez-vous à votre espace personnel.';
+    $('auth-heading').textContent = mode === 'signup' ? 'Créer un compte' : 'Connexion';
     $('auth-submit').textContent = mode === 'signup' ? 'Créer mon compte' : 'Se connecter';
-    $('auth-switch-label').textContent = mode === 'signup' ? 'Vous avez déjà un compte ? ' : 'Pas encore de compte ? ';
-    $('auth-switch').textContent = mode === 'signup' ? 'Se connecter' : 'Créer mon compte';
+    $('auth-switch').textContent = mode === 'signup' ? 'Se connecter' : 'Créer un compte';
     password.autocomplete = mode === 'signup' ? 'new-password' : 'current-password';
-    $('password-help').hidden = mode !== 'signup';
     message(messageNode, '');
   }
   function friendly(error) {
@@ -106,7 +105,7 @@
           return false;
         }
       }
-      status('Enregistré', false);
+      status('', false);
       return true;
     })();
     var success = await running;
@@ -132,8 +131,8 @@
     $('gate-payment').hidden = false;
     $('gate-code').hidden = true;
     var heading = $('gate-payment').querySelector('h2');
-    if (heading) heading.textContent = 'Renouveler mon abonnement';
-    message(gateMessage, 'Votre abonnement a expiré. Vos données restent conservées. Payez 1 100 FCFA pour un nouveau mois.', false);
+    if (heading) heading.textContent = 'Réactiver mon espace';
+    message(gateMessage, 'Votre accès a expiré. Un paiement unique de 1 100 FCFA le réactive à vie.', false);
     lock(false);
   }
 
@@ -165,10 +164,10 @@
       $('account-screen').hidden = true;
       $('gate-screen').hidden = true;
       $('book-app').hidden = false;
-      status('Espace chargé', false);
+      status('', false);
       scheduleSubscriptionExpiry();
     } catch (error) {
-      message(gateMessage, 'Impossible d’ouvrir le carnet. Aucune donnée n’a été supprimée.', true);
+      message(gateMessage, 'Impossible d’ouvrir le carnet. Réessayez.', true);
       lock(false);
     }
   }
@@ -179,7 +178,7 @@
     screen.id = 'device-limit-screen';
     screen.className = 'auth-shell';
     screen.hidden = true;
-    screen.innerHTML = '<div class="auth-card"><div class="brand">Mon Book</div><h2>Limite d’appareils atteinte</h2><p class="intro">Votre compte utilise déjà ses deux appareils autorisés. Retirez un ancien appareil pour continuer ici.</p><div id="device-list"></div><p class="message" id="device-message" role="status" aria-live="polite"></p><p class="switch"><button type="button" class="link" id="device-limit-logout">Se déconnecter</button></p></div>';
+    screen.innerHTML = '<div class="auth-card"><div class="brand">Mon Book</div><h2>Limite d’appareils atteinte</h2><p class="intro">Votre compte utilise déjà ses deux appareils autorisés. Retirez un ancien appareil pour continuer ici.</p><div id="device-list"></div><p class="message" id="device-message" role="status" aria-live="polite" hidden></p><p class="switch"><button type="button" class="link" id="device-limit-logout">Se déconnecter</button></p></div>';
     document.body.insertBefore(screen, $('book-app'));
     var logoutButton = screen.querySelector('#device-limit-logout');
     logoutButton.addEventListener('click', function () { logout(logoutButton); });
@@ -200,10 +199,10 @@
     var list = screen.querySelector('#device-list');
     var statusNode = screen.querySelector('#device-message');
     list.replaceChildren();
-    statusNode.textContent = '';
+    message(statusNode, '');
 
     if (!Array.isArray(devices) || !devices.length) {
-      statusNode.textContent = 'Impossible d’afficher vos appareils. Actualisez la page ou réessayez.';
+      message(statusNode, 'Impossible d’afficher vos appareils. Actualisez la page ou réessayez.', true);
       return;
     }
 
@@ -218,14 +217,14 @@
       label.textContent = device.label || 'Navigateur web';
       row.appendChild(label);
 
-      var lastSeen = document.createElement('p');
-      lastSeen.style.margin = '4px 0 10px';
-      lastSeen.style.color = '#5d6b78';
       var date = new Date(device.lastSeenAt || device.createdAt || '');
-      lastSeen.textContent = isNaN(date.getTime())
-        ? 'Appareil enregistré'
-        : 'Dernière activité : ' + date.toLocaleString('fr-FR');
-      row.appendChild(lastSeen);
+      if (!isNaN(date.getTime())) {
+        var lastSeen = document.createElement('p');
+        lastSeen.style.margin = '4px 0 10px';
+        lastSeen.style.color = '#5d6b78';
+        lastSeen.textContent = 'Dernière activité : ' + date.toLocaleString('fr-FR');
+        row.appendChild(lastSeen);
+      }
 
       var removeButton = document.createElement('button');
       removeButton.type = 'button';
@@ -233,14 +232,14 @@
       removeButton.textContent = 'Retirer cet appareil';
       removeButton.addEventListener('click', async function () {
         removeButton.disabled = true;
-        statusNode.textContent = 'Mise à jour des appareils…';
+        message(statusNode, 'Mise à jour des appareils…');
         try {
           var removed = await deviceRequest('remove', device.deviceId);
           if (!removed.ok) throw new Error(removed.data.message || 'Suppression impossible.');
           await enter(currentUser);
         } catch (error) {
           removeButton.disabled = false;
-          statusNode.textContent = error.message || 'Suppression impossible. Réessayez.';
+          message(statusNode, error.message || 'Suppression impossible. Réessayez.', true);
         }
       });
       row.appendChild(removeButton);
@@ -282,12 +281,12 @@
     $('gate-screen').hidden = false;
     $('gate-payment').hidden = true;
     $('gate-code').hidden = true;
-    message(gateMessage, 'Vérification de votre abonnement…');
+    message(gateMessage, 'Vérification de votre accès…');
     var accessResult, subscriptionResult;
     try {
       var checks = await Promise.all([
         client.from('mon_book_access').select('user_id').eq('user_id', user.id).maybeSingle(),
-        client.from('mon_book_subscriptions').select('expires_at').eq('user_id', user.id).maybeSingle()
+        client.from('mon_book_subscriptions').select('expires_at,is_lifetime').eq('user_id', user.id).maybeSingle()
       ]);
       accessResult = checks[0];
       subscriptionResult = checks[1];
@@ -296,17 +295,20 @@
       subscriptionResult = { error: error };
     }
     if (accessResult.error || subscriptionResult.error) {
-      message(gateMessage, 'Impossible de vérifier votre abonnement. Déconnectez-vous et réessayez.', true);
+      message(gateMessage, 'Impossible de vérifier votre accès. Déconnectez-vous et réessayez.', true);
       lock(false); return;
     }
     var subscription = subscriptionResult.data;
-    subscriptionExpiresAt = subscription && subscription.expires_at || null;
-    var subscriptionActive = !!(subscriptionExpiresAt && Date.parse(subscriptionExpiresAt) > Date.now());
+    subscriptionExpiresAt = subscription && subscription.is_lifetime !== true && subscription.expires_at || null;
+    var subscriptionActive = !!(subscription && (
+      subscription.is_lifetime === true ||
+      (subscriptionExpiresAt && Date.parse(subscriptionExpiresAt) > Date.now())
+    ));
     if (subscriptionActive && accessResult.data) { await openBook(); return; }
     if (subscriptionActive && !accessResult.data) {
       $('gate-payment').hidden = true;
       $('gate-code').hidden = false;
-      message(gateMessage, 'Paiement confirmé. Saisissez le code reçu par e-mail ou demandez un nouveau code.');
+      message(gateMessage, 'Paiement confirmé. Saisissez votre code d’activation.');
       lock(false);
       if (new URLSearchParams(location.search).has('paiement')) await checkPayment();
       return;
@@ -314,11 +316,11 @@
     $('gate-payment').hidden = false;
     $('gate-code').hidden = true;
     var heading = $('gate-payment').querySelector('h2');
-    if (heading) heading.textContent = accessResult.data ? 'Renouveler mon abonnement' : 'Activer mon espace';
+    if (heading) heading.textContent = accessResult.data ? 'Réactiver mon espace' : 'Activer mon espace';
     if (subscriptionExpiresAt) {
-      message(gateMessage, 'Votre abonnement a expiré le ' + formatSubscriptionDate(subscriptionExpiresAt) + '. Vos données restent conservées. Payez 1 100 FCFA pour retrouver l’accès.');
+      message(gateMessage, 'Votre accès a expiré le ' + formatSubscriptionDate(subscriptionExpiresAt) + '. Un paiement unique de 1 100 FCFA le réactive à vie.');
     } else {
-      message(gateMessage, 'Payez 1 100 FCFA pour accéder à Mon Book pendant un mois calendaire.');
+      message(gateMessage, '');
     }
     lock(false);
     if (new URLSearchParams(location.search).has('paiement')) await checkPayment();
@@ -397,7 +399,7 @@
         await sendCode();
         return;
       }
-      if (data.status === 'pending') message(gateMessage, data.message || 'Paiement en attente de confirmation. Si vous avez déjà payé, ne payez pas deux fois : patientez puis vérifiez à nouveau.');
+      if (data.status === 'pending') message(gateMessage, data.message || 'Paiement en attente. Ne payez pas à nouveau avant sa confirmation.');
       else message(gateMessage, data.message || 'Aucun paiement confirmé pour ce compte.');
     } catch (error) { message(gateMessage, error.message || 'Vérification impossible.', true); }
     lock(false);
@@ -452,7 +454,7 @@
       if (res.data.session && res.data.user) { await enter(res.data.user); return; }
       password.value = '';
       setMode('login');
-      message(messageNode, 'Vérifiez votre boîte e-mail et confirmez votre adresse, puis revenez vous connecter. Pensez à vérifier les courriers indésirables.');
+      message(messageNode, 'Confirmez votre adresse e-mail depuis le lien reçu, puis connectez-vous.');
       lock(false);
     } catch (error) { message(messageNode, friendly(error), true); lock(false); }
   });
@@ -485,7 +487,7 @@
     } catch (error) {
       button.disabled = false;
       if (!$('gate-screen').hidden) message(gateMessage, 'Déconnexion impossible. Réessayez.', true);
-      else status('Déconnexion impossible. Réessayez.', true);
+      else status('Déconnexion impossible. Réessayez.', true, false);
     }
   }
   $('logout-button').addEventListener('click', function () { logout($('logout-button')); });
