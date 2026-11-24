@@ -181,7 +181,7 @@ module.exports = async function (req, res) {
       const rows = await db(
         'mon_book_subscriptions?user_id=eq.' +
         user.id +
-        '&select=user_id,anchor_day,expires_at,last_payment_id'
+        '&select=user_id,anchor_day,expires_at,is_lifetime,last_payment_id'
       );
       if (!Array.isArray(rows) || rows.length > 1) {
         throw new Error('db_error');
@@ -190,7 +190,9 @@ module.exports = async function (req, res) {
     }
 
     function subscriptionIsActive(subscription) {
-      const expiry = subscription && Date.parse(subscription.expires_at || '');
+      if (!subscription) return false;
+      if (subscription.is_lifetime === true) return true;
+      const expiry = Date.parse(subscription.expires_at || '');
       return Number.isFinite(expiry) && expiry > Date.now();
     }
 
@@ -326,7 +328,7 @@ module.exports = async function (req, res) {
 
       if (payment && payment.status === 'pending') {
         const pendingMessage = payment.amount_cents === AMOUNT
-          ? 'Votre paiement de 1 100 FCFA est en attente de confirmation.'
+          ? 'Votre paiement unique de 1 100 FCFA est en attente de confirmation.'
           : 'Une ancienne demande de paiement de ' + (payment.amount_cents === 210000 ? '2 100' : '1 100') + ' FCFA est encore en cours. Ne payez pas une seconde fois ; vérifiez d’abord son statut.';
         return reply(200, pendingMessage, {
           status: 'pending',
@@ -340,13 +342,20 @@ module.exports = async function (req, res) {
 
       const subscription = await currentSubscription();
       if (subscriptionIsActive(subscription)) {
-        return reply(200, 'Votre abonnement est actif jusqu’au ' + formatExpiry(subscription) + '.', {
+        if (subscription.is_lifetime === true) {
+          return reply(200, 'Votre accès à vie est déjà actif.', {
+            status: 'paid',
+            lifetime: true
+          });
+        }
+        return reply(200, 'Votre accès est actif jusqu’au ' + formatExpiry(subscription) + '.', {
           status: 'paid',
+          lifetime: false,
           expiresAt: subscription.expires_at
         });
       }
       if (subscription) {
-        return reply(200, 'Votre abonnement a expiré le ' + formatExpiry(subscription) + '. Payez 1 100 FCFA pour le renouveler.', {
+        return reply(200, 'Votre accès a expiré le ' + formatExpiry(subscription) + '. Un paiement unique de 1 100 FCFA le réactive à vie.', {
           status: 'expired',
           expiresAt: subscription.expires_at
         });
@@ -400,8 +409,15 @@ module.exports = async function (req, res) {
 
     const subscription = await currentSubscription();
     if (subscriptionIsActive(subscription)) {
-      return reply(200, 'Votre abonnement est actif jusqu’au ' + formatExpiry(subscription) + '.', {
+      if (subscription.is_lifetime === true) {
+        return reply(200, 'Votre accès à vie est déjà actif.', {
+          status: 'paid',
+          lifetime: true
+        });
+      }
+      return reply(200, 'Votre accès est actif jusqu’au ' + formatExpiry(subscription) + '.', {
         status: 'paid',
+        lifetime: false,
         expiresAt: subscription.expires_at
       });
     }
