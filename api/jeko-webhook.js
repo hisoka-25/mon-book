@@ -262,7 +262,7 @@ async function handler(req, res) {
       return res.status(200).json({ received: true });
     }
 
-    return res.status(503).json({ message: 'Enregistrement de l’abonnement en attente.' });
+    return res.status(503).json({ message: 'Enregistrement de l’accès en attente.' });
   } catch (error) {
     return res.status(503).json({
       message: 'Service temporairement indisponible.'
